@@ -54,7 +54,7 @@ var __importStar =
 Object.defineProperty(exports, '__esModule', { value: true });
 exports.normalizeClientOptions = normalizeClientOptions;
 exports.normalizeClientOptionsWithAuth = normalizeClientOptionsWithAuth;
-const BearerAuthProvider_js_1 = require('./auth/BearerAuthProvider.js');
+const HeaderAuthProvider_js_1 = require('./auth/HeaderAuthProvider.js');
 const headers_js_1 = require('./core/headers.js');
 const core = __importStar(require('./core/index.js'));
 function normalizeClientOptions(options) {
@@ -92,7 +92,7 @@ function normalizeClientOptionsWithAuth(options) {
   const normalizedWithNoOpAuthProvider = withNoOpAuthProvider(normalized);
   (_a = normalized.authProvider) !== null && _a !== void 0
     ? _a
-    : (normalized.authProvider = new BearerAuthProvider_js_1.BearerAuthProvider(normalizedWithNoOpAuthProvider));
+    : (normalized.authProvider = new HeaderAuthProvider_js_1.HeaderAuthProvider(normalizedWithNoOpAuthProvider));
   return normalized;
 }
 function withNoOpAuthProvider(options) {

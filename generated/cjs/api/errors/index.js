@@ -27,7 +27,9 @@ var __exportStar =
   };
 Object.defineProperty(exports, '__esModule', { value: true });
 __exportStar(require('./BadRequestError.js'), exports);
+__exportStar(require('./ConflictError.js'), exports);
 __exportStar(require('./ForbiddenError.js'), exports);
 __exportStar(require('./NotFoundError.js'), exports);
+__exportStar(require('./ServiceUnavailableError.js'), exports);
 __exportStar(require('./TooManyRequestsError.js'), exports);
 __exportStar(require('./UnauthorizedError.js'), exports);

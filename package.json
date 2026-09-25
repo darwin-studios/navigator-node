@@ -1,13 +1,13 @@
 {
   "name": "@darwinso/sdk",
-  "version": "0.2.0",
+  "version": "0.4.0",
   "description": "Official TypeScript SDK for Darwin",
   "keywords": [
     "darwin",
     "agent",
     "sdk"
   ],
-  "homepage": "https://docs.darwin.so/sdks/typescript",
+  "homepage": "https://darwin.so/docs/surfaces/api",
   "bugs": {
     "url": "https://github.com/darwin-studios/darwin/issues"
   },
@@ -17,9 +17,6 @@
   },
   "license": "MIT",
   "packageManager": "pnpm@10.6.3",
-  "main": "./generated/cjs/index.js",
-  "module": "./generated/esm/index.mjs",
-  "types": "./generated/esm/index.d.mts",
   "exports": {
     ".": {
       "types": "./generated/esm/index.d.mts",
@@ -28,6 +25,9 @@
     },
     "./package.json": "./package.json"
   },
+  "main": "./generated/cjs/index.js",
+  "module": "./generated/esm/index.mjs",
+  "types": "./generated/esm/index.d.mts",
   "files": [
     "generated",
     "README.md",

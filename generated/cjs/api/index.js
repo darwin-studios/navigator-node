@@ -26,6 +26,6 @@ var __exportStar =
       if (p !== 'default' && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
   };
 Object.defineProperty(exports, '__esModule', { value: true });
+__exportStar(require('./client/index.js'), exports);
 __exportStar(require('./errors/index.js'), exports);
-__exportStar(require('./resources/index.js'), exports);
 __exportStar(require('./types/index.js'), exports);

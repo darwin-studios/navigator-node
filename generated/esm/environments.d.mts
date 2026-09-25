@@ -1,4 +1,4 @@
 export declare const DarwinEnvironment: {
-    readonly Production: "https://api.darwin.so/api/v1";
+    readonly Default: "https://api.darwin.so/api/v2";
 };
-export type DarwinEnvironment = typeof DarwinEnvironment.Production;
+export type DarwinEnvironment = typeof DarwinEnvironment.Default;

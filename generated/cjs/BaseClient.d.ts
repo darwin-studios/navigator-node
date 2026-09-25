@@ -1,4 +1,4 @@
-import { BearerAuthProvider } from './auth/BearerAuthProvider.js';
+import { HeaderAuthProvider } from './auth/HeaderAuthProvider.js';
 import * as core from './core/index.js';
 import type * as environments from './environments.js';
 
@@ -6,7 +6,7 @@ export type AuthOption =
   | false
   | core.AuthProvider['getAuthRequest']
   | core.AuthProvider
-  | BearerAuthProvider.AuthOptions;
+  | HeaderAuthProvider.AuthOptions;
 export type BaseClientOptions = {
   environment?: core.Supplier<environments.DarwinEnvironment | string>;
   /** Specify a custom URL to connect the client to. */
@@ -28,7 +28,7 @@ export type BaseClientOptions = {
   };
   /** Override auth. Pass false to disable, a function returning auth headers, an AuthProvider, or auth options. */
   auth?: AuthOption;
-} & BearerAuthProvider.AuthOptions;
+} & HeaderAuthProvider.AuthOptions;
 export interface BaseRequestOptions {
   /** The maximum time to wait for a response in seconds. */
   timeoutInSeconds?: number;

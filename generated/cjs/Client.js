@@ -82,193 +82,1996 @@ var __awaiter =
       step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
   };
+var __rest =
+  (this && this.__rest) ||
+  function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0) t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === 'function')
+      for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
+        if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i])) t[p[i]] = s[p[i]];
+      }
+    return t;
+  };
 Object.defineProperty(exports, '__esModule', { value: true });
 exports.DarwinClient = void 0;
-const Client_js_1 = require('./api/resources/account/client/Client.js');
-const Client_js_2 = require('./api/resources/ais/client/Client.js');
-const Client_js_3 = require('./api/resources/applications/client/Client.js');
-const Client_js_4 = require('./api/resources/billing/client/Client.js');
-const Client_js_5 = require('./api/resources/connections/client/Client.js');
-const Client_js_6 = require('./api/resources/conversations/client/Client.js');
-const Client_js_7 = require('./api/resources/deals/client/Client.js');
-const Client_js_8 = require('./api/resources/deployment/client/Client.js');
-const Client_js_9 = require('./api/resources/enrollment/client/Client.js');
-const Client_js_10 = require('./api/resources/ephemeralGoals/client/Client.js');
-const Client_js_11 = require('./api/resources/goals/client/Client.js');
-const Client_js_12 = require('./api/resources/integrations/client/Client.js');
-const Client_js_13 = require('./api/resources/listings/client/Client.js');
-const Client_js_14 = require('./api/resources/network/client/Client.js');
-const Client_js_15 = require('./api/resources/notifications/client/Client.js');
-const Client_js_16 = require('./api/resources/outcomes/client/Client.js');
-const Client_js_17 = require('./api/resources/permissions/client/Client.js');
-const Client_js_18 = require('./api/resources/reputation/client/Client.js');
-const Client_js_19 = require('./api/resources/requests/client/Client.js');
-const Client_js_20 = require('./api/resources/skills/client/Client.js');
-const Client_js_21 = require('./api/resources/tasks/client/Client.js');
-const Client_js_22 = require('./api/resources/tools/client/Client.js');
-const Client_js_23 = require('./api/resources/transactions/client/Client.js');
-const Client_js_24 = require('./api/resources/usage/client/Client.js');
-const Client_js_25 = require('./api/resources/verification/client/Client.js');
-const Client_js_26 = require('./api/resources/webhooks/client/Client.js');
+const Darwin = __importStar(require('./api/index.js'));
 const BaseClient_js_1 = require('./BaseClient.js');
+const headers_js_1 = require('./core/headers.js');
 const core = __importStar(require('./core/index.js'));
+const requestBody_js_1 = require('./core/requestBody.js');
+const environments = __importStar(require('./environments.js'));
+const handleNonStatusCodeError_js_1 = require('./errors/handleNonStatusCodeError.js');
+const errors = __importStar(require('./errors/index.js'));
 class DarwinClient {
-  constructor(options) {
+  constructor(options = {}) {
     this._options = (0, BaseClient_js_1.normalizeClientOptionsWithAuth)(options);
   }
-  get account() {
-    var _a;
-    return (_a = this._account) !== null && _a !== void 0
-      ? _a
-      : (this._account = new Client_js_1.AccountClient(this._options));
+  /**
+   * Find and rank public capabilities from the active Creora Product v2 index. Search is discovery, not execution authorization. No credential is required at the public anonymous limit. You may supply a Darwin API key or OAuth bearer with directory:read for the higher authenticated limit.
+   *
+   * @param {Darwin.SearchRequest} request
+   * @param {DarwinClient.RequestOptions} requestOptions - Request-specific configuration.
+   *
+   * @throws {@link Darwin.BadRequestError}
+   * @throws {@link Darwin.UnauthorizedError}
+   * @throws {@link Darwin.ForbiddenError}
+   * @throws {@link Darwin.NotFoundError}
+   * @throws {@link Darwin.TooManyRequestsError}
+   * @throws {@link Darwin.ServiceUnavailableError}
+   * @throws {@link errors.DarwinError}
+   * @throws {@link errors.DarwinTimeoutError}
+   *
+   * @example
+   *     await client.search({
+   *         query: "Find an AI that can compare SOC 2 vendors and return a cited recommendation under $500."
+   *     })
+   */
+  search(request, requestOptions) {
+    return core.HttpResponsePromise.fromPromise(this.__search(request, requestOptions));
   }
-  get ais() {
-    var _a;
-    return (_a = this._ais) !== null && _a !== void 0 ? _a : (this._ais = new Client_js_2.AisClient(this._options));
+  __search(request, requestOptions) {
+    return __awaiter(this, void 0, void 0, function* () {
+      var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+      const _headers = (0, headers_js_1.mergeHeaders)(
+        (_a = this._options) === null || _a === void 0 ? void 0 : _a.headers,
+        requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.headers,
+      );
+      const _response = yield core.fetcher({
+        url: core.url.join(
+          (_c =
+            (_b = yield core.Supplier.get(this._options.baseUrl)) !== null && _b !== void 0
+              ? _b
+              : yield core.Supplier.get(this._options.environment)) !== null && _c !== void 0
+            ? _c
+            : environments.DarwinEnvironment.Default,
+          'search',
+        ),
+        method: 'POST',
+        headers: _headers,
+        contentType: 'application/json',
+        queryString: core.url
+          .queryBuilder()
+          .mergeAdditional(requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.queryParams)
+          .build(),
+        requestType: 'json',
+        body: (0, requestBody_js_1.mergeAdditionalBodyParameters)(
+          request,
+          requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.additionalBodyParameters,
+        ),
+        timeoutMs:
+          ((_f =
+            (_d = requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.timeoutInSeconds) !==
+              null && _d !== void 0
+              ? _d
+              : (_e = this._options) === null || _e === void 0
+                ? void 0
+                : _e.timeoutInSeconds) !== null && _f !== void 0
+            ? _f
+            : 60) * 1000,
+        maxRetries:
+          (_g = requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.maxRetries) !== null &&
+          _g !== void 0
+            ? _g
+            : (_h = this._options) === null || _h === void 0
+              ? void 0
+              : _h.maxRetries,
+        abortSignal: requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.abortSignal,
+        fetchFn: (_j = this._options) === null || _j === void 0 ? void 0 : _j.fetch,
+        logging: this._options.logging,
+      });
+      if (_response.ok) {
+        return { data: _response.body, rawResponse: _response.rawResponse };
+      }
+      if (_response.error.reason === 'status-code') {
+        switch (_response.error.statusCode) {
+          case 400:
+            throw new Darwin.BadRequestError(_response.error.body, _response.rawResponse);
+          case 401:
+            throw new Darwin.UnauthorizedError(_response.error.body, _response.rawResponse);
+          case 403:
+            throw new Darwin.ForbiddenError(_response.error.body, _response.rawResponse);
+          case 404:
+            throw new Darwin.NotFoundError(_response.error.body, _response.rawResponse);
+          case 429:
+            throw new Darwin.TooManyRequestsError(_response.error.body, _response.rawResponse);
+          case 503:
+            throw new Darwin.ServiceUnavailableError(_response.error.body, _response.rawResponse);
+          default:
+            throw new errors.DarwinError({
+              statusCode: _response.error.statusCode,
+              body: _response.error.body,
+              rawResponse: _response.rawResponse,
+            });
+        }
+      }
+      return (0, handleNonStatusCodeError_js_1.handleNonStatusCodeError)(
+        _response.error,
+        _response.rawResponse,
+        'POST',
+        '/search',
+      );
+    });
   }
-  get listings() {
-    var _a;
-    return (_a = this._listings) !== null && _a !== void 0
-      ? _a
-      : (this._listings = new Client_js_13.ListingsClient(this._options));
+  /**
+   * Register an unverified Darwin account without creating an AI or API key. Verify the email address through Darwin sign-in, then complete account setup before issuing application credentials. An application key never identifies an end user.
+   *
+   * @param {Darwin.CreateAccountRequest} request
+   * @param {DarwinClient.RequestOptions} requestOptions - Request-specific configuration.
+   *
+   * @throws {@link Darwin.BadRequestError}
+   * @throws {@link Darwin.ConflictError}
+   * @throws {@link Darwin.ServiceUnavailableError}
+   * @throws {@link errors.DarwinError}
+   * @throws {@link errors.DarwinTimeoutError}
+   *
+   * @example
+   *     await client.createAccount({
+   *         email: "email",
+   *         password: "password",
+   *         name: "name",
+   *         type: "personal"
+   *     })
+   */
+  createAccount(request, requestOptions) {
+    return core.HttpResponsePromise.fromPromise(this.__createAccount(request, requestOptions));
   }
-  get reputation() {
-    var _a;
-    return (_a = this._reputation) !== null && _a !== void 0
-      ? _a
-      : (this._reputation = new Client_js_18.ReputationClient(this._options));
+  __createAccount(request, requestOptions) {
+    return __awaiter(this, void 0, void 0, function* () {
+      var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+      const _headers = (0, headers_js_1.mergeHeaders)(
+        (_a = this._options) === null || _a === void 0 ? void 0 : _a.headers,
+        requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.headers,
+      );
+      const _response = yield core.fetcher({
+        url: core.url.join(
+          (_c =
+            (_b = yield core.Supplier.get(this._options.baseUrl)) !== null && _b !== void 0
+              ? _b
+              : yield core.Supplier.get(this._options.environment)) !== null && _c !== void 0
+            ? _c
+            : environments.DarwinEnvironment.Default,
+          'accounts',
+        ),
+        method: 'POST',
+        headers: _headers,
+        contentType: 'application/json',
+        queryString: core.url
+          .queryBuilder()
+          .mergeAdditional(requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.queryParams)
+          .build(),
+        requestType: 'json',
+        body: (0, requestBody_js_1.mergeAdditionalBodyParameters)(
+          request,
+          requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.additionalBodyParameters,
+        ),
+        timeoutMs:
+          ((_f =
+            (_d = requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.timeoutInSeconds) !==
+              null && _d !== void 0
+              ? _d
+              : (_e = this._options) === null || _e === void 0
+                ? void 0
+                : _e.timeoutInSeconds) !== null && _f !== void 0
+            ? _f
+            : 60) * 1000,
+        maxRetries:
+          (_g = requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.maxRetries) !== null &&
+          _g !== void 0
+            ? _g
+            : (_h = this._options) === null || _h === void 0
+              ? void 0
+              : _h.maxRetries,
+        abortSignal: requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.abortSignal,
+        fetchFn: (_j = this._options) === null || _j === void 0 ? void 0 : _j.fetch,
+        logging: this._options.logging,
+      });
+      if (_response.ok) {
+        return { data: _response.body, rawResponse: _response.rawResponse };
+      }
+      if (_response.error.reason === 'status-code') {
+        switch (_response.error.statusCode) {
+          case 400:
+            throw new Darwin.BadRequestError(_response.error.body, _response.rawResponse);
+          case 409:
+            throw new Darwin.ConflictError(_response.error.body, _response.rawResponse);
+          case 503:
+            throw new Darwin.ServiceUnavailableError(_response.error.body, _response.rawResponse);
+          default:
+            throw new errors.DarwinError({
+              statusCode: _response.error.statusCode,
+              body: _response.error.body,
+              rawResponse: _response.rawResponse,
+            });
+        }
+      }
+      return (0, handleNonStatusCodeError_js_1.handleNonStatusCodeError)(
+        _response.error,
+        _response.rawResponse,
+        'POST',
+        '/accounts',
+      );
+    });
   }
-  get permissions() {
-    var _a;
-    return (_a = this._permissions) !== null && _a !== void 0
-      ? _a
-      : (this._permissions = new Client_js_17.PermissionsClient(this._options));
+  /**
+   * Read the account behind a user-bound legacy key or a user-scoped OAuth grant with account:read. Application-only keys cannot read or impersonate an account.
+   *
+   * @param {Darwin.GetAccountRequest} request
+   * @param {DarwinClient.RequestOptions} requestOptions - Request-specific configuration.
+   *
+   * @throws {@link Darwin.UnauthorizedError}
+   * @throws {@link Darwin.ForbiddenError}
+   * @throws {@link errors.DarwinError}
+   * @throws {@link errors.DarwinTimeoutError}
+   *
+   * @example
+   *     await client.getAccount()
+   */
+  getAccount(request = {}, requestOptions) {
+    return core.HttpResponsePromise.fromPromise(this.__getAccount(request, requestOptions));
   }
-  get notifications() {
-    var _a;
-    return (_a = this._notifications) !== null && _a !== void 0
-      ? _a
-      : (this._notifications = new Client_js_15.NotificationsClient(this._options));
+  __getAccount() {
+    return __awaiter(this, arguments, void 0, function* (request = {}, requestOptions) {
+      var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+      const { aiId } = request;
+      const _queryParams = {
+        aiId,
+      };
+      const _authRequest = yield this._options.authProvider.getAuthRequest();
+      const _headers = (0, headers_js_1.mergeHeaders)(
+        _authRequest.headers,
+        (_a = this._options) === null || _a === void 0 ? void 0 : _a.headers,
+        requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.headers,
+      );
+      const _response = yield core.fetcher({
+        url: core.url.join(
+          (_c =
+            (_b = yield core.Supplier.get(this._options.baseUrl)) !== null && _b !== void 0
+              ? _b
+              : yield core.Supplier.get(this._options.environment)) !== null && _c !== void 0
+            ? _c
+            : environments.DarwinEnvironment.Default,
+          'account',
+        ),
+        method: 'GET',
+        headers: _headers,
+        queryString: core.url
+          .queryBuilder()
+          .addMany(_queryParams)
+          .mergeAdditional(requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.queryParams)
+          .build(),
+        timeoutMs:
+          ((_f =
+            (_d = requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.timeoutInSeconds) !==
+              null && _d !== void 0
+              ? _d
+              : (_e = this._options) === null || _e === void 0
+                ? void 0
+                : _e.timeoutInSeconds) !== null && _f !== void 0
+            ? _f
+            : 60) * 1000,
+        maxRetries:
+          (_g = requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.maxRetries) !== null &&
+          _g !== void 0
+            ? _g
+            : (_h = this._options) === null || _h === void 0
+              ? void 0
+              : _h.maxRetries,
+        abortSignal: requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.abortSignal,
+        fetchFn: (_j = this._options) === null || _j === void 0 ? void 0 : _j.fetch,
+        logging: this._options.logging,
+      });
+      if (_response.ok) {
+        return { data: _response.body, rawResponse: _response.rawResponse };
+      }
+      if (_response.error.reason === 'status-code') {
+        switch (_response.error.statusCode) {
+          case 401:
+            throw new Darwin.UnauthorizedError(_response.error.body, _response.rawResponse);
+          case 403:
+            throw new Darwin.ForbiddenError(_response.error.body, _response.rawResponse);
+          default:
+            throw new errors.DarwinError({
+              statusCode: _response.error.statusCode,
+              body: _response.error.body,
+              rawResponse: _response.rawResponse,
+            });
+        }
+      }
+      return (0, handleNonStatusCodeError_js_1.handleNonStatusCodeError)(
+        _response.error,
+        _response.rawResponse,
+        'GET',
+        '/account',
+      );
+    });
   }
-  get usage() {
-    var _a;
-    return (_a = this._usage) !== null && _a !== void 0
-      ? _a
-      : (this._usage = new Client_js_24.UsageClient(this._options));
+  /**
+   * Register a developer application for the authenticated account. Requires applications:write on a user-scoped OAuth grant or a legacy user key. This does not grant access to another user.
+   *
+   * @param {Darwin.CreateApplicationRequest} request
+   * @param {DarwinClient.RequestOptions} requestOptions - Request-specific configuration.
+   *
+   * @throws {@link Darwin.BadRequestError}
+   * @throws {@link Darwin.UnauthorizedError}
+   * @throws {@link Darwin.ForbiddenError}
+   * @throws {@link errors.DarwinError}
+   * @throws {@link errors.DarwinTimeoutError}
+   *
+   * @example
+   *     await client.createApplication({
+   *         name: "name"
+   *     })
+   */
+  createApplication(request, requestOptions) {
+    return core.HttpResponsePromise.fromPromise(this.__createApplication(request, requestOptions));
   }
-  get verification() {
-    var _a;
-    return (_a = this._verification) !== null && _a !== void 0
-      ? _a
-      : (this._verification = new Client_js_25.VerificationClient(this._options));
+  __createApplication(request, requestOptions) {
+    return __awaiter(this, void 0, void 0, function* () {
+      var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+      const _authRequest = yield this._options.authProvider.getAuthRequest();
+      const _headers = (0, headers_js_1.mergeHeaders)(
+        _authRequest.headers,
+        (_a = this._options) === null || _a === void 0 ? void 0 : _a.headers,
+        requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.headers,
+      );
+      const _response = yield core.fetcher({
+        url: core.url.join(
+          (_c =
+            (_b = yield core.Supplier.get(this._options.baseUrl)) !== null && _b !== void 0
+              ? _b
+              : yield core.Supplier.get(this._options.environment)) !== null && _c !== void 0
+            ? _c
+            : environments.DarwinEnvironment.Default,
+          'account/applications',
+        ),
+        method: 'POST',
+        headers: _headers,
+        contentType: 'application/json',
+        queryString: core.url
+          .queryBuilder()
+          .mergeAdditional(requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.queryParams)
+          .build(),
+        requestType: 'json',
+        body: (0, requestBody_js_1.mergeAdditionalBodyParameters)(
+          request,
+          requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.additionalBodyParameters,
+        ),
+        timeoutMs:
+          ((_f =
+            (_d = requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.timeoutInSeconds) !==
+              null && _d !== void 0
+              ? _d
+              : (_e = this._options) === null || _e === void 0
+                ? void 0
+                : _e.timeoutInSeconds) !== null && _f !== void 0
+            ? _f
+            : 60) * 1000,
+        maxRetries:
+          (_g = requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.maxRetries) !== null &&
+          _g !== void 0
+            ? _g
+            : (_h = this._options) === null || _h === void 0
+              ? void 0
+              : _h.maxRetries,
+        abortSignal: requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.abortSignal,
+        fetchFn: (_j = this._options) === null || _j === void 0 ? void 0 : _j.fetch,
+        logging: this._options.logging,
+      });
+      if (_response.ok) {
+        return { data: _response.body, rawResponse: _response.rawResponse };
+      }
+      if (_response.error.reason === 'status-code') {
+        switch (_response.error.statusCode) {
+          case 400:
+            throw new Darwin.BadRequestError(_response.error.body, _response.rawResponse);
+          case 401:
+            throw new Darwin.UnauthorizedError(_response.error.body, _response.rawResponse);
+          case 403:
+            throw new Darwin.ForbiddenError(_response.error.body, _response.rawResponse);
+          default:
+            throw new errors.DarwinError({
+              statusCode: _response.error.statusCode,
+              body: _response.error.body,
+              rawResponse: _response.rawResponse,
+            });
+        }
+      }
+      return (0, handleNonStatusCodeError_js_1.handleNonStatusCodeError)(
+        _response.error,
+        _response.rawResponse,
+        'POST',
+        '/account/applications',
+      );
+    });
   }
-  get deployment() {
-    var _a;
-    return (_a = this._deployment) !== null && _a !== void 0
-      ? _a
-      : (this._deployment = new Client_js_8.DeploymentClient(this._options));
+  /**
+   * Read one application owned by the authenticated account. Requires applications:read on a user-scoped grant or legacy key.
+   *
+   * @param {Darwin.GetApplicationRequest} request
+   * @param {DarwinClient.RequestOptions} requestOptions - Request-specific configuration.
+   *
+   * @throws {@link Darwin.UnauthorizedError}
+   * @throws {@link Darwin.ForbiddenError}
+   * @throws {@link Darwin.NotFoundError}
+   * @throws {@link errors.DarwinError}
+   * @throws {@link errors.DarwinTimeoutError}
+   *
+   * @example
+   *     await client.getApplication({
+   *         applicationId: "applicationId"
+   *     })
+   */
+  getApplication(request, requestOptions) {
+    return core.HttpResponsePromise.fromPromise(this.__getApplication(request, requestOptions));
   }
-  get integrations() {
-    var _a;
-    return (_a = this._integrations) !== null && _a !== void 0
-      ? _a
-      : (this._integrations = new Client_js_12.IntegrationsClient(this._options));
+  __getApplication(request, requestOptions) {
+    return __awaiter(this, void 0, void 0, function* () {
+      var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+      const { applicationId } = request;
+      const _authRequest = yield this._options.authProvider.getAuthRequest();
+      const _headers = (0, headers_js_1.mergeHeaders)(
+        _authRequest.headers,
+        (_a = this._options) === null || _a === void 0 ? void 0 : _a.headers,
+        requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.headers,
+      );
+      const _response = yield core.fetcher({
+        url: core.url.join(
+          (_c =
+            (_b = yield core.Supplier.get(this._options.baseUrl)) !== null && _b !== void 0
+              ? _b
+              : yield core.Supplier.get(this._options.environment)) !== null && _c !== void 0
+            ? _c
+            : environments.DarwinEnvironment.Default,
+          `account/applications/${core.url.encodePathParam(applicationId)}`,
+        ),
+        method: 'GET',
+        headers: _headers,
+        queryString: core.url
+          .queryBuilder()
+          .mergeAdditional(requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.queryParams)
+          .build(),
+        timeoutMs:
+          ((_f =
+            (_d = requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.timeoutInSeconds) !==
+              null && _d !== void 0
+              ? _d
+              : (_e = this._options) === null || _e === void 0
+                ? void 0
+                : _e.timeoutInSeconds) !== null && _f !== void 0
+            ? _f
+            : 60) * 1000,
+        maxRetries:
+          (_g = requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.maxRetries) !== null &&
+          _g !== void 0
+            ? _g
+            : (_h = this._options) === null || _h === void 0
+              ? void 0
+              : _h.maxRetries,
+        abortSignal: requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.abortSignal,
+        fetchFn: (_j = this._options) === null || _j === void 0 ? void 0 : _j.fetch,
+        logging: this._options.logging,
+      });
+      if (_response.ok) {
+        return { data: _response.body, rawResponse: _response.rawResponse };
+      }
+      if (_response.error.reason === 'status-code') {
+        switch (_response.error.statusCode) {
+          case 401:
+            throw new Darwin.UnauthorizedError(_response.error.body, _response.rawResponse);
+          case 403:
+            throw new Darwin.ForbiddenError(_response.error.body, _response.rawResponse);
+          case 404:
+            throw new Darwin.NotFoundError(_response.error.body, _response.rawResponse);
+          default:
+            throw new errors.DarwinError({
+              statusCode: _response.error.statusCode,
+              body: _response.error.body,
+              rawResponse: _response.rawResponse,
+            });
+        }
+      }
+      return (0, handleNonStatusCodeError_js_1.handleNonStatusCodeError)(
+        _response.error,
+        _response.rawResponse,
+        'GET',
+        '/account/applications/{applicationId}',
+      );
+    });
   }
-  get connections() {
-    var _a;
-    return (_a = this._connections) !== null && _a !== void 0
-      ? _a
-      : (this._connections = new Client_js_5.ConnectionsClient(this._options));
+  /**
+   * List current or ended human Actions with human:actions, or select an acting AI for an AI-scoped agent:read/goals:read grant.
+   *
+   * @param {Darwin.ListActionsRequest} request
+   * @param {DarwinClient.RequestOptions} requestOptions - Request-specific configuration.
+   *
+   * @throws {@link Darwin.BadRequestError}
+   * @throws {@link Darwin.UnauthorizedError}
+   * @throws {@link Darwin.ForbiddenError}
+   * @throws {@link Darwin.NotFoundError}
+   * @throws {@link Darwin.ConflictError}
+   * @throws {@link Darwin.ServiceUnavailableError}
+   * @throws {@link errors.DarwinError}
+   * @throws {@link errors.DarwinTimeoutError}
+   *
+   * @example
+   *     await client.listActions()
+   */
+  listActions(request = {}, requestOptions) {
+    return core.HttpResponsePromise.fromPromise(this.__listActions(request, requestOptions));
   }
-  get skills() {
-    var _a;
-    return (_a = this._skills) !== null && _a !== void 0
-      ? _a
-      : (this._skills = new Client_js_20.SkillsClient(this._options));
+  __listActions() {
+    return __awaiter(this, arguments, void 0, function* (request = {}, requestOptions) {
+      var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+      const { actingAiId, targetAiId, lifecycle, cursor, limit } = request;
+      const _queryParams = {
+        actingAiId,
+        targetAiId,
+        lifecycle: lifecycle != null ? lifecycle : undefined,
+        cursor,
+        limit,
+      };
+      const _authRequest = yield this._options.authProvider.getAuthRequest();
+      const _headers = (0, headers_js_1.mergeHeaders)(
+        _authRequest.headers,
+        (_a = this._options) === null || _a === void 0 ? void 0 : _a.headers,
+        requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.headers,
+      );
+      const _response = yield core.fetcher({
+        url: core.url.join(
+          (_c =
+            (_b = yield core.Supplier.get(this._options.baseUrl)) !== null && _b !== void 0
+              ? _b
+              : yield core.Supplier.get(this._options.environment)) !== null && _c !== void 0
+            ? _c
+            : environments.DarwinEnvironment.Default,
+          'actions',
+        ),
+        method: 'GET',
+        headers: _headers,
+        queryString: core.url
+          .queryBuilder()
+          .addMany(_queryParams)
+          .mergeAdditional(requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.queryParams)
+          .build(),
+        timeoutMs:
+          ((_f =
+            (_d = requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.timeoutInSeconds) !==
+              null && _d !== void 0
+              ? _d
+              : (_e = this._options) === null || _e === void 0
+                ? void 0
+                : _e.timeoutInSeconds) !== null && _f !== void 0
+            ? _f
+            : 60) * 1000,
+        maxRetries:
+          (_g = requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.maxRetries) !== null &&
+          _g !== void 0
+            ? _g
+            : (_h = this._options) === null || _h === void 0
+              ? void 0
+              : _h.maxRetries,
+        abortSignal: requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.abortSignal,
+        fetchFn: (_j = this._options) === null || _j === void 0 ? void 0 : _j.fetch,
+        logging: this._options.logging,
+      });
+      if (_response.ok) {
+        return { data: _response.body, rawResponse: _response.rawResponse };
+      }
+      if (_response.error.reason === 'status-code') {
+        switch (_response.error.statusCode) {
+          case 400:
+            throw new Darwin.BadRequestError(_response.error.body, _response.rawResponse);
+          case 401:
+            throw new Darwin.UnauthorizedError(_response.error.body, _response.rawResponse);
+          case 403:
+            throw new Darwin.ForbiddenError(_response.error.body, _response.rawResponse);
+          case 404:
+            throw new Darwin.NotFoundError(_response.error.body, _response.rawResponse);
+          case 409:
+            throw new Darwin.ConflictError(_response.error.body, _response.rawResponse);
+          case 503:
+            throw new Darwin.ServiceUnavailableError(_response.error.body, _response.rawResponse);
+          default:
+            throw new errors.DarwinError({
+              statusCode: _response.error.statusCode,
+              body: _response.error.body,
+              rawResponse: _response.rawResponse,
+            });
+        }
+      }
+      return (0, handleNonStatusCodeError_js_1.handleNonStatusCodeError)(
+        _response.error,
+        _response.rawResponse,
+        'GET',
+        '/actions',
+      );
+    });
   }
-  get billing() {
-    var _a;
-    return (_a = this._billing) !== null && _a !== void 0
-      ? _a
-      : (this._billing = new Client_js_4.BillingClient(this._options));
+  /**
+   * Start durable work from an exact Search result. A consenting human OAuth user uses human:actions without an AI; an AI-scoped caller uses agent:write or goals:write and selects an authorized acting AI.
+   *
+   * @param {Darwin.ActStartRequest} request
+   * @param {DarwinClient.RequestOptions} requestOptions - Request-specific configuration.
+   *
+   * @throws {@link Darwin.BadRequestError}
+   * @throws {@link Darwin.UnauthorizedError}
+   * @throws {@link Darwin.ForbiddenError}
+   * @throws {@link Darwin.NotFoundError}
+   * @throws {@link Darwin.ConflictError}
+   * @throws {@link Darwin.ServiceUnavailableError}
+   * @throws {@link errors.DarwinError}
+   * @throws {@link errors.DarwinTimeoutError}
+   *
+   * @example
+   *     await client.startAction({
+   *         capabilityId: "capabilityId",
+   *         capabilityRevision: 1,
+   *         requestId: "requestId"
+   *     })
+   */
+  startAction(request, requestOptions) {
+    return core.HttpResponsePromise.fromPromise(this.__startAction(request, requestOptions));
   }
-  get conversations() {
-    var _a;
-    return (_a = this._conversations) !== null && _a !== void 0
-      ? _a
-      : (this._conversations = new Client_js_6.ConversationsClient(this._options));
+  __startAction(request, requestOptions) {
+    return __awaiter(this, void 0, void 0, function* () {
+      var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+      const _authRequest = yield this._options.authProvider.getAuthRequest();
+      const _headers = (0, headers_js_1.mergeHeaders)(
+        _authRequest.headers,
+        (_a = this._options) === null || _a === void 0 ? void 0 : _a.headers,
+        requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.headers,
+      );
+      const _response = yield core.fetcher({
+        url: core.url.join(
+          (_c =
+            (_b = yield core.Supplier.get(this._options.baseUrl)) !== null && _b !== void 0
+              ? _b
+              : yield core.Supplier.get(this._options.environment)) !== null && _c !== void 0
+            ? _c
+            : environments.DarwinEnvironment.Default,
+          'actions',
+        ),
+        method: 'POST',
+        headers: _headers,
+        contentType: 'application/json',
+        queryString: core.url
+          .queryBuilder()
+          .mergeAdditional(requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.queryParams)
+          .build(),
+        requestType: 'json',
+        body: (0, requestBody_js_1.mergeAdditionalBodyParameters)(
+          request,
+          requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.additionalBodyParameters,
+        ),
+        timeoutMs:
+          ((_f =
+            (_d = requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.timeoutInSeconds) !==
+              null && _d !== void 0
+              ? _d
+              : (_e = this._options) === null || _e === void 0
+                ? void 0
+                : _e.timeoutInSeconds) !== null && _f !== void 0
+            ? _f
+            : 60) * 1000,
+        maxRetries:
+          (_g = requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.maxRetries) !== null &&
+          _g !== void 0
+            ? _g
+            : (_h = this._options) === null || _h === void 0
+              ? void 0
+              : _h.maxRetries,
+        abortSignal: requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.abortSignal,
+        fetchFn: (_j = this._options) === null || _j === void 0 ? void 0 : _j.fetch,
+        logging: this._options.logging,
+      });
+      if (_response.ok) {
+        return { data: _response.body, rawResponse: _response.rawResponse };
+      }
+      if (_response.error.reason === 'status-code') {
+        switch (_response.error.statusCode) {
+          case 400:
+            throw new Darwin.BadRequestError(_response.error.body, _response.rawResponse);
+          case 401:
+            throw new Darwin.UnauthorizedError(_response.error.body, _response.rawResponse);
+          case 403:
+            throw new Darwin.ForbiddenError(_response.error.body, _response.rawResponse);
+          case 404:
+            throw new Darwin.NotFoundError(_response.error.body, _response.rawResponse);
+          case 409:
+            throw new Darwin.ConflictError(_response.error.body, _response.rawResponse);
+          case 503:
+            throw new Darwin.ServiceUnavailableError(_response.error.body, _response.rawResponse);
+          default:
+            throw new errors.DarwinError({
+              statusCode: _response.error.statusCode,
+              body: _response.error.body,
+              rawResponse: _response.rawResponse,
+            });
+        }
+      }
+      return (0, handleNonStatusCodeError_js_1.handleNonStatusCodeError)(
+        _response.error,
+        _response.rawResponse,
+        'POST',
+        '/actions',
+      );
+    });
   }
-  get requests() {
-    var _a;
-    return (_a = this._requests) !== null && _a !== void 0
-      ? _a
-      : (this._requests = new Client_js_19.RequestsClient(this._options));
+  /**
+   * Get the truthful current status and required next step for one action. Requires the matching human:actions grant or an AI-scoped agent:read/goals:read grant.
+   *
+   * @param {Darwin.GetActionRequest} request
+   * @param {DarwinClient.RequestOptions} requestOptions - Request-specific configuration.
+   *
+   * @throws {@link Darwin.BadRequestError}
+   * @throws {@link Darwin.UnauthorizedError}
+   * @throws {@link Darwin.ForbiddenError}
+   * @throws {@link Darwin.NotFoundError}
+   * @throws {@link Darwin.ConflictError}
+   * @throws {@link Darwin.ServiceUnavailableError}
+   * @throws {@link errors.DarwinError}
+   * @throws {@link errors.DarwinTimeoutError}
+   *
+   * @example
+   *     await client.getAction({
+   *         actionId: "actionId"
+   *     })
+   */
+  getAction(request, requestOptions) {
+    return core.HttpResponsePromise.fromPromise(this.__getAction(request, requestOptions));
   }
-  get tools() {
-    var _a;
-    return (_a = this._tools) !== null && _a !== void 0
-      ? _a
-      : (this._tools = new Client_js_22.ToolsClient(this._options));
+  __getAction(request, requestOptions) {
+    return __awaiter(this, void 0, void 0, function* () {
+      var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+      const { actionId } = request;
+      const _authRequest = yield this._options.authProvider.getAuthRequest();
+      const _headers = (0, headers_js_1.mergeHeaders)(
+        _authRequest.headers,
+        (_a = this._options) === null || _a === void 0 ? void 0 : _a.headers,
+        requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.headers,
+      );
+      const _response = yield core.fetcher({
+        url: core.url.join(
+          (_c =
+            (_b = yield core.Supplier.get(this._options.baseUrl)) !== null && _b !== void 0
+              ? _b
+              : yield core.Supplier.get(this._options.environment)) !== null && _c !== void 0
+            ? _c
+            : environments.DarwinEnvironment.Default,
+          `actions/${core.url.encodePathParam(actionId)}`,
+        ),
+        method: 'GET',
+        headers: _headers,
+        queryString: core.url
+          .queryBuilder()
+          .mergeAdditional(requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.queryParams)
+          .build(),
+        timeoutMs:
+          ((_f =
+            (_d = requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.timeoutInSeconds) !==
+              null && _d !== void 0
+              ? _d
+              : (_e = this._options) === null || _e === void 0
+                ? void 0
+                : _e.timeoutInSeconds) !== null && _f !== void 0
+            ? _f
+            : 60) * 1000,
+        maxRetries:
+          (_g = requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.maxRetries) !== null &&
+          _g !== void 0
+            ? _g
+            : (_h = this._options) === null || _h === void 0
+              ? void 0
+              : _h.maxRetries,
+        abortSignal: requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.abortSignal,
+        fetchFn: (_j = this._options) === null || _j === void 0 ? void 0 : _j.fetch,
+        logging: this._options.logging,
+      });
+      if (_response.ok) {
+        return { data: _response.body, rawResponse: _response.rawResponse };
+      }
+      if (_response.error.reason === 'status-code') {
+        switch (_response.error.statusCode) {
+          case 400:
+            throw new Darwin.BadRequestError(_response.error.body, _response.rawResponse);
+          case 401:
+            throw new Darwin.UnauthorizedError(_response.error.body, _response.rawResponse);
+          case 403:
+            throw new Darwin.ForbiddenError(_response.error.body, _response.rawResponse);
+          case 404:
+            throw new Darwin.NotFoundError(_response.error.body, _response.rawResponse);
+          case 409:
+            throw new Darwin.ConflictError(_response.error.body, _response.rawResponse);
+          case 503:
+            throw new Darwin.ServiceUnavailableError(_response.error.body, _response.rawResponse);
+          default:
+            throw new errors.DarwinError({
+              statusCode: _response.error.statusCode,
+              body: _response.error.body,
+              rawResponse: _response.rawResponse,
+            });
+        }
+      }
+      return (0, handleNonStatusCodeError_js_1.handleNonStatusCodeError)(
+        _response.error,
+        _response.rawResponse,
+        'GET',
+        '/actions/{actionId}',
+      );
+    });
   }
-  get tasks() {
-    var _a;
-    return (_a = this._tasks) !== null && _a !== void 0
-      ? _a
-      : (this._tasks = new Client_js_21.TasksClient(this._options));
+  /**
+   * Give an action more information without implicitly approving anything. Requires the matching human:actions or AI-scoped agent:write/goals:write grant.
+   *
+   * @param {Darwin.ContinueActionRequest} request
+   * @param {DarwinClient.RequestOptions} requestOptions - Request-specific configuration.
+   *
+   * @throws {@link Darwin.BadRequestError}
+   * @throws {@link Darwin.UnauthorizedError}
+   * @throws {@link Darwin.ForbiddenError}
+   * @throws {@link Darwin.NotFoundError}
+   * @throws {@link Darwin.ConflictError}
+   * @throws {@link Darwin.ServiceUnavailableError}
+   * @throws {@link errors.DarwinError}
+   * @throws {@link errors.DarwinTimeoutError}
+   *
+   * @example
+   *     await client.continueAction({
+   *         actionId: "actionId",
+   *         body: {
+   *             requestId: "requestId"
+   *         }
+   *     })
+   */
+  continueAction(request, requestOptions) {
+    return core.HttpResponsePromise.fromPromise(this.__continueAction(request, requestOptions));
   }
-  get goals() {
-    var _a;
-    return (_a = this._goals) !== null && _a !== void 0
-      ? _a
-      : (this._goals = new Client_js_11.GoalsClient(this._options));
+  __continueAction(request, requestOptions) {
+    return __awaiter(this, void 0, void 0, function* () {
+      var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+      const { actionId, body: _body } = request;
+      const _authRequest = yield this._options.authProvider.getAuthRequest();
+      const _headers = (0, headers_js_1.mergeHeaders)(
+        _authRequest.headers,
+        (_a = this._options) === null || _a === void 0 ? void 0 : _a.headers,
+        requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.headers,
+      );
+      const _response = yield core.fetcher({
+        url: core.url.join(
+          (_c =
+            (_b = yield core.Supplier.get(this._options.baseUrl)) !== null && _b !== void 0
+              ? _b
+              : yield core.Supplier.get(this._options.environment)) !== null && _c !== void 0
+            ? _c
+            : environments.DarwinEnvironment.Default,
+          `actions/${core.url.encodePathParam(actionId)}`,
+        ),
+        method: 'PATCH',
+        headers: _headers,
+        contentType: 'application/json',
+        queryString: core.url
+          .queryBuilder()
+          .mergeAdditional(requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.queryParams)
+          .build(),
+        requestType: 'json',
+        body: (0, requestBody_js_1.mergeAdditionalBodyParameters)(
+          _body,
+          requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.additionalBodyParameters,
+        ),
+        timeoutMs:
+          ((_f =
+            (_d = requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.timeoutInSeconds) !==
+              null && _d !== void 0
+              ? _d
+              : (_e = this._options) === null || _e === void 0
+                ? void 0
+                : _e.timeoutInSeconds) !== null && _f !== void 0
+            ? _f
+            : 60) * 1000,
+        maxRetries:
+          (_g = requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.maxRetries) !== null &&
+          _g !== void 0
+            ? _g
+            : (_h = this._options) === null || _h === void 0
+              ? void 0
+              : _h.maxRetries,
+        abortSignal: requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.abortSignal,
+        fetchFn: (_j = this._options) === null || _j === void 0 ? void 0 : _j.fetch,
+        logging: this._options.logging,
+      });
+      if (_response.ok) {
+        return { data: _response.body, rawResponse: _response.rawResponse };
+      }
+      if (_response.error.reason === 'status-code') {
+        switch (_response.error.statusCode) {
+          case 400:
+            throw new Darwin.BadRequestError(_response.error.body, _response.rawResponse);
+          case 401:
+            throw new Darwin.UnauthorizedError(_response.error.body, _response.rawResponse);
+          case 403:
+            throw new Darwin.ForbiddenError(_response.error.body, _response.rawResponse);
+          case 404:
+            throw new Darwin.NotFoundError(_response.error.body, _response.rawResponse);
+          case 409:
+            throw new Darwin.ConflictError(_response.error.body, _response.rawResponse);
+          case 503:
+            throw new Darwin.ServiceUnavailableError(_response.error.body, _response.rawResponse);
+          default:
+            throw new errors.DarwinError({
+              statusCode: _response.error.statusCode,
+              body: _response.error.body,
+              rawResponse: _response.rawResponse,
+            });
+        }
+      }
+      return (0, handleNonStatusCodeError_js_1.handleNonStatusCodeError)(
+        _response.error,
+        _response.rawResponse,
+        'PATCH',
+        '/actions/{actionId}',
+      );
+    });
   }
-  get network() {
-    var _a;
-    return (_a = this._network) !== null && _a !== void 0
-      ? _a
-      : (this._network = new Client_js_14.NetworkClient(this._options));
+  /**
+   * Establish or reuse one bounded authentication relationship between the caller and a destination AI. When the destination has no account for the user, the same hosted flow completes required first-time setup before connecting. The relationship can be reused across Actions until it expires or is revoked.
+   *
+   * @param {Darwin.AuthenticateSessionRequest} request
+   * @param {DarwinClient.RequestOptions} requestOptions - Request-specific configuration.
+   *
+   * @throws {@link Darwin.UnauthorizedError}
+   * @throws {@link Darwin.NotFoundError}
+   * @throws {@link Darwin.ConflictError}
+   * @throws {@link Darwin.ServiceUnavailableError}
+   * @throws {@link errors.DarwinError}
+   * @throws {@link errors.DarwinTimeoutError}
+   *
+   * @example
+   *     await client.authenticateSession({
+   *         aiId: "aiId",
+   *         methodId: "oauth_github",
+   *         source: {
+   *             kind: "one_time"
+   *         },
+   *         saveToDarwinVault: false,
+   *         requestId: "request_auth_01J9Y8M4Z7B9R6K2X3C5V1N0PQ"
+   *     })
+   */
+  authenticateSession(request, requestOptions) {
+    return core.HttpResponsePromise.fromPromise(this.__authenticateSession(request, requestOptions));
   }
-  get deals() {
-    var _a;
-    return (_a = this._deals) !== null && _a !== void 0
-      ? _a
-      : (this._deals = new Client_js_7.DealsClient(this._options));
+  __authenticateSession(request, requestOptions) {
+    return __awaiter(this, void 0, void 0, function* () {
+      var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+      const { aiId } = request,
+        _body = __rest(request, ['aiId']);
+      const _authRequest = yield this._options.authProvider.getAuthRequest();
+      const _headers = (0, headers_js_1.mergeHeaders)(
+        _authRequest.headers,
+        (_a = this._options) === null || _a === void 0 ? void 0 : _a.headers,
+        requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.headers,
+      );
+      const _response = yield core.fetcher({
+        url: core.url.join(
+          (_c =
+            (_b = yield core.Supplier.get(this._options.baseUrl)) !== null && _b !== void 0
+              ? _b
+              : yield core.Supplier.get(this._options.environment)) !== null && _c !== void 0
+            ? _c
+            : environments.DarwinEnvironment.Default,
+          `ais/${core.url.encodePathParam(aiId)}/authenticate`,
+        ),
+        method: 'POST',
+        headers: _headers,
+        contentType: 'application/json',
+        queryString: core.url
+          .queryBuilder()
+          .mergeAdditional(requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.queryParams)
+          .build(),
+        requestType: 'json',
+        body: (0, requestBody_js_1.mergeAdditionalBodyParameters)(
+          _body,
+          requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.additionalBodyParameters,
+        ),
+        timeoutMs:
+          ((_f =
+            (_d = requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.timeoutInSeconds) !==
+              null && _d !== void 0
+              ? _d
+              : (_e = this._options) === null || _e === void 0
+                ? void 0
+                : _e.timeoutInSeconds) !== null && _f !== void 0
+            ? _f
+            : 60) * 1000,
+        maxRetries:
+          (_g = requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.maxRetries) !== null &&
+          _g !== void 0
+            ? _g
+            : (_h = this._options) === null || _h === void 0
+              ? void 0
+              : _h.maxRetries,
+        abortSignal: requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.abortSignal,
+        fetchFn: (_j = this._options) === null || _j === void 0 ? void 0 : _j.fetch,
+        logging: this._options.logging,
+      });
+      if (_response.ok) {
+        return { data: _response.body, rawResponse: _response.rawResponse };
+      }
+      if (_response.error.reason === 'status-code') {
+        switch (_response.error.statusCode) {
+          case 401:
+            throw new Darwin.UnauthorizedError(_response.error.body, _response.rawResponse);
+          case 404:
+            throw new Darwin.NotFoundError(_response.error.body, _response.rawResponse);
+          case 409:
+            throw new Darwin.ConflictError(_response.error.body, _response.rawResponse);
+          case 503:
+            throw new Darwin.ServiceUnavailableError(_response.error.body, _response.rawResponse);
+          default:
+            throw new errors.DarwinError({
+              statusCode: _response.error.statusCode,
+              body: _response.error.body,
+              rawResponse: _response.rawResponse,
+            });
+        }
+      }
+      return (0, handleNonStatusCodeError_js_1.handleNonStatusCodeError)(
+        _response.error,
+        _response.rawResponse,
+        'POST',
+        '/ais/{aiId}/authenticate',
+      );
+    });
   }
-  get transactions() {
-    var _a;
-    return (_a = this._transactions) !== null && _a !== void 0
-      ? _a
-      : (this._transactions = new Client_js_23.TransactionsClient(this._options));
+  /**
+   * Choose a bound direct or Darwin Pay route without overriding the reviewed merchant, amount, currency, protocol, or scope.
+   *
+   * @param {Darwin.ActPayRequest} request
+   * @param {DarwinClient.RequestOptions} requestOptions - Request-specific configuration.
+   *
+   * @throws {@link Darwin.BadRequestError}
+   * @throws {@link Darwin.UnauthorizedError}
+   * @throws {@link Darwin.ForbiddenError}
+   * @throws {@link Darwin.NotFoundError}
+   * @throws {@link Darwin.ConflictError}
+   * @throws {@link Darwin.ServiceUnavailableError}
+   * @throws {@link errors.DarwinError}
+   * @throws {@link errors.DarwinTimeoutError}
+   *
+   * @example
+   *     await client.payAction({
+   *         actionId: "actionId",
+   *         interactionId: "interaction_pay_01J9Y8M4Z7B9R6K2X3C5V1N0PQ",
+   *         expectedRevision: 4,
+   *         route: "darwin_pay",
+   *         source: {
+   *             kind: "one_time"
+   *         },
+   *         save: false,
+   *         requestId: "request_pay_01J9Y8M4Z7B9R6K2X3C5V1N0PQ"
+   *     })
+   */
+  payAction(request, requestOptions) {
+    return core.HttpResponsePromise.fromPromise(this.__payAction(request, requestOptions));
   }
-  get outcomes() {
-    var _a;
-    return (_a = this._outcomes) !== null && _a !== void 0
-      ? _a
-      : (this._outcomes = new Client_js_16.OutcomesClient(this._options));
+  __payAction(request, requestOptions) {
+    return __awaiter(this, void 0, void 0, function* () {
+      var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+      const { actionId } = request,
+        _body = __rest(request, ['actionId']);
+      const _authRequest = yield this._options.authProvider.getAuthRequest();
+      const _headers = (0, headers_js_1.mergeHeaders)(
+        _authRequest.headers,
+        (_a = this._options) === null || _a === void 0 ? void 0 : _a.headers,
+        requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.headers,
+      );
+      const _response = yield core.fetcher({
+        url: core.url.join(
+          (_c =
+            (_b = yield core.Supplier.get(this._options.baseUrl)) !== null && _b !== void 0
+              ? _b
+              : yield core.Supplier.get(this._options.environment)) !== null && _c !== void 0
+            ? _c
+            : environments.DarwinEnvironment.Default,
+          `actions/${core.url.encodePathParam(actionId)}/pay`,
+        ),
+        method: 'POST',
+        headers: _headers,
+        contentType: 'application/json',
+        queryString: core.url
+          .queryBuilder()
+          .mergeAdditional(requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.queryParams)
+          .build(),
+        requestType: 'json',
+        body: (0, requestBody_js_1.mergeAdditionalBodyParameters)(
+          _body,
+          requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.additionalBodyParameters,
+        ),
+        timeoutMs:
+          ((_f =
+            (_d = requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.timeoutInSeconds) !==
+              null && _d !== void 0
+              ? _d
+              : (_e = this._options) === null || _e === void 0
+                ? void 0
+                : _e.timeoutInSeconds) !== null && _f !== void 0
+            ? _f
+            : 60) * 1000,
+        maxRetries:
+          (_g = requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.maxRetries) !== null &&
+          _g !== void 0
+            ? _g
+            : (_h = this._options) === null || _h === void 0
+              ? void 0
+              : _h.maxRetries,
+        abortSignal: requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.abortSignal,
+        fetchFn: (_j = this._options) === null || _j === void 0 ? void 0 : _j.fetch,
+        logging: this._options.logging,
+      });
+      if (_response.ok) {
+        return { data: _response.body, rawResponse: _response.rawResponse };
+      }
+      if (_response.error.reason === 'status-code') {
+        switch (_response.error.statusCode) {
+          case 400:
+            throw new Darwin.BadRequestError(_response.error.body, _response.rawResponse);
+          case 401:
+            throw new Darwin.UnauthorizedError(_response.error.body, _response.rawResponse);
+          case 403:
+            throw new Darwin.ForbiddenError(_response.error.body, _response.rawResponse);
+          case 404:
+            throw new Darwin.NotFoundError(_response.error.body, _response.rawResponse);
+          case 409:
+            throw new Darwin.ConflictError(_response.error.body, _response.rawResponse);
+          case 503:
+            throw new Darwin.ServiceUnavailableError(_response.error.body, _response.rawResponse);
+          default:
+            throw new errors.DarwinError({
+              statusCode: _response.error.statusCode,
+              body: _response.error.body,
+              rawResponse: _response.rawResponse,
+            });
+        }
+      }
+      return (0, handleNonStatusCodeError_js_1.handleNonStatusCodeError)(
+        _response.error,
+        _response.rawResponse,
+        'POST',
+        '/actions/{actionId}/pay',
+      );
+    });
   }
-  get applications() {
-    var _a;
-    return (_a = this._applications) !== null && _a !== void 0
-      ? _a
-      : (this._applications = new Client_js_3.ApplicationsClient(this._options));
+  /**
+   * Apply an exact reviewed approval decision with stale-preview protection. Requires the matching human:actions or AI-scoped agent:write/goals:write grant.
+   *
+   * @param {Darwin.ActApproveRequest} request
+   * @param {DarwinClient.RequestOptions} requestOptions - Request-specific configuration.
+   *
+   * @throws {@link Darwin.BadRequestError}
+   * @throws {@link Darwin.UnauthorizedError}
+   * @throws {@link Darwin.ForbiddenError}
+   * @throws {@link Darwin.NotFoundError}
+   * @throws {@link Darwin.ConflictError}
+   * @throws {@link Darwin.ServiceUnavailableError}
+   * @throws {@link errors.DarwinError}
+   * @throws {@link errors.DarwinTimeoutError}
+   *
+   * @example
+   *     await client.approveAction({
+   *         actionId: "actionId",
+   *         approvalId: "approvalId",
+   *         decision: "approve",
+   *         expectedRevision: "2024-01-15T09:30:00Z",
+   *         reviewedPayloadDigest: "reviewedPayloadDigest",
+   *         requestId: "requestId"
+   *     })
+   */
+  approveAction(request, requestOptions) {
+    return core.HttpResponsePromise.fromPromise(this.__approveAction(request, requestOptions));
   }
-  get enrollment() {
-    var _a;
-    return (_a = this._enrollment) !== null && _a !== void 0
-      ? _a
-      : (this._enrollment = new Client_js_9.EnrollmentClient(this._options));
+  __approveAction(request, requestOptions) {
+    return __awaiter(this, void 0, void 0, function* () {
+      var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+      const { actionId } = request,
+        _body = __rest(request, ['actionId']);
+      const _authRequest = yield this._options.authProvider.getAuthRequest();
+      const _headers = (0, headers_js_1.mergeHeaders)(
+        _authRequest.headers,
+        (_a = this._options) === null || _a === void 0 ? void 0 : _a.headers,
+        requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.headers,
+      );
+      const _response = yield core.fetcher({
+        url: core.url.join(
+          (_c =
+            (_b = yield core.Supplier.get(this._options.baseUrl)) !== null && _b !== void 0
+              ? _b
+              : yield core.Supplier.get(this._options.environment)) !== null && _c !== void 0
+            ? _c
+            : environments.DarwinEnvironment.Default,
+          `actions/${core.url.encodePathParam(actionId)}/approve`,
+        ),
+        method: 'POST',
+        headers: _headers,
+        contentType: 'application/json',
+        queryString: core.url
+          .queryBuilder()
+          .mergeAdditional(requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.queryParams)
+          .build(),
+        requestType: 'json',
+        body: (0, requestBody_js_1.mergeAdditionalBodyParameters)(
+          _body,
+          requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.additionalBodyParameters,
+        ),
+        timeoutMs:
+          ((_f =
+            (_d = requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.timeoutInSeconds) !==
+              null && _d !== void 0
+              ? _d
+              : (_e = this._options) === null || _e === void 0
+                ? void 0
+                : _e.timeoutInSeconds) !== null && _f !== void 0
+            ? _f
+            : 60) * 1000,
+        maxRetries:
+          (_g = requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.maxRetries) !== null &&
+          _g !== void 0
+            ? _g
+            : (_h = this._options) === null || _h === void 0
+              ? void 0
+              : _h.maxRetries,
+        abortSignal: requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.abortSignal,
+        fetchFn: (_j = this._options) === null || _j === void 0 ? void 0 : _j.fetch,
+        logging: this._options.logging,
+      });
+      if (_response.ok) {
+        return { data: _response.body, rawResponse: _response.rawResponse };
+      }
+      if (_response.error.reason === 'status-code') {
+        switch (_response.error.statusCode) {
+          case 400:
+            throw new Darwin.BadRequestError(_response.error.body, _response.rawResponse);
+          case 401:
+            throw new Darwin.UnauthorizedError(_response.error.body, _response.rawResponse);
+          case 403:
+            throw new Darwin.ForbiddenError(_response.error.body, _response.rawResponse);
+          case 404:
+            throw new Darwin.NotFoundError(_response.error.body, _response.rawResponse);
+          case 409:
+            throw new Darwin.ConflictError(_response.error.body, _response.rawResponse);
+          case 503:
+            throw new Darwin.ServiceUnavailableError(_response.error.body, _response.rawResponse);
+          default:
+            throw new errors.DarwinError({
+              statusCode: _response.error.statusCode,
+              body: _response.error.body,
+              rawResponse: _response.rawResponse,
+            });
+        }
+      }
+      return (0, handleNonStatusCodeError_js_1.handleNonStatusCodeError)(
+        _response.error,
+        _response.rawResponse,
+        'POST',
+        '/actions/{actionId}/approve',
+      );
+    });
   }
-  get ephemeralGoals() {
-    var _a;
-    return (_a = this._ephemeralGoals) !== null && _a !== void 0
-      ? _a
-      : (this._ephemeralGoals = new Client_js_10.EphemeralGoalsClient(this._options));
+  /**
+   * @deprecated
+   *
+   * Compatibility operation that interrupts only the current queued or running turn. New integrations should use End action for one clear finish-or-cancel closure flow. Requires the matching human:actions or AI-scoped agent:write/goals:write grant.
+   *
+   * @param {Darwin.ActStopRequest} request
+   * @param {DarwinClient.RequestOptions} requestOptions - Request-specific configuration.
+   *
+   * @throws {@link Darwin.BadRequestError}
+   * @throws {@link Darwin.UnauthorizedError}
+   * @throws {@link Darwin.ForbiddenError}
+   * @throws {@link Darwin.NotFoundError}
+   * @throws {@link Darwin.ConflictError}
+   * @throws {@link Darwin.ServiceUnavailableError}
+   * @throws {@link errors.DarwinError}
+   * @throws {@link errors.DarwinTimeoutError}
+   *
+   * @example
+   *     await client.stopAction({
+   *         actionId: "actionId",
+   *         requestId: "requestId"
+   *     })
+   */
+  stopAction(request, requestOptions) {
+    return core.HttpResponsePromise.fromPromise(this.__stopAction(request, requestOptions));
   }
-  get webhooks() {
-    var _a;
-    return (_a = this._webhooks) !== null && _a !== void 0
-      ? _a
-      : (this._webhooks = new Client_js_26.WebhooksClient(this._options));
+  __stopAction(request, requestOptions) {
+    return __awaiter(this, void 0, void 0, function* () {
+      var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+      const { actionId } = request,
+        _body = __rest(request, ['actionId']);
+      const _authRequest = yield this._options.authProvider.getAuthRequest();
+      const _headers = (0, headers_js_1.mergeHeaders)(
+        _authRequest.headers,
+        (_a = this._options) === null || _a === void 0 ? void 0 : _a.headers,
+        requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.headers,
+      );
+      const _response = yield core.fetcher({
+        url: core.url.join(
+          (_c =
+            (_b = yield core.Supplier.get(this._options.baseUrl)) !== null && _b !== void 0
+              ? _b
+              : yield core.Supplier.get(this._options.environment)) !== null && _c !== void 0
+            ? _c
+            : environments.DarwinEnvironment.Default,
+          `actions/${core.url.encodePathParam(actionId)}/stop`,
+        ),
+        method: 'POST',
+        headers: _headers,
+        contentType: 'application/json',
+        queryString: core.url
+          .queryBuilder()
+          .mergeAdditional(requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.queryParams)
+          .build(),
+        requestType: 'json',
+        body: (0, requestBody_js_1.mergeAdditionalBodyParameters)(
+          _body,
+          requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.additionalBodyParameters,
+        ),
+        timeoutMs:
+          ((_f =
+            (_d = requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.timeoutInSeconds) !==
+              null && _d !== void 0
+              ? _d
+              : (_e = this._options) === null || _e === void 0
+                ? void 0
+                : _e.timeoutInSeconds) !== null && _f !== void 0
+            ? _f
+            : 60) * 1000,
+        maxRetries:
+          (_g = requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.maxRetries) !== null &&
+          _g !== void 0
+            ? _g
+            : (_h = this._options) === null || _h === void 0
+              ? void 0
+              : _h.maxRetries,
+        abortSignal: requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.abortSignal,
+        fetchFn: (_j = this._options) === null || _j === void 0 ? void 0 : _j.fetch,
+        logging: this._options.logging,
+      });
+      if (_response.ok) {
+        return { data: _response.body, rawResponse: _response.rawResponse };
+      }
+      if (_response.error.reason === 'status-code') {
+        switch (_response.error.statusCode) {
+          case 400:
+            throw new Darwin.BadRequestError(_response.error.body, _response.rawResponse);
+          case 401:
+            throw new Darwin.UnauthorizedError(_response.error.body, _response.rawResponse);
+          case 403:
+            throw new Darwin.ForbiddenError(_response.error.body, _response.rawResponse);
+          case 404:
+            throw new Darwin.NotFoundError(_response.error.body, _response.rawResponse);
+          case 409:
+            throw new Darwin.ConflictError(_response.error.body, _response.rawResponse);
+          case 503:
+            throw new Darwin.ServiceUnavailableError(_response.error.body, _response.rawResponse);
+          default:
+            throw new errors.DarwinError({
+              statusCode: _response.error.statusCode,
+              body: _response.error.body,
+              rawResponse: _response.rawResponse,
+            });
+        }
+      }
+      return (0, handleNonStatusCodeError_js_1.handleNonStatusCodeError)(
+        _response.error,
+        _response.rawResponse,
+        'POST',
+        '/actions/{actionId}/stop',
+      );
+    });
+  }
+  /**
+   * Freeze ordinary new work and request durable closure with finish or cancel intent. Darwin derives the final outcome; the caller cannot declare success.
+   *
+   * @param {Darwin.ActEndRequest} request
+   * @param {DarwinClient.RequestOptions} requestOptions - Request-specific configuration.
+   *
+   * @throws {@link Darwin.BadRequestError}
+   * @throws {@link Darwin.UnauthorizedError}
+   * @throws {@link Darwin.ForbiddenError}
+   * @throws {@link Darwin.NotFoundError}
+   * @throws {@link Darwin.ConflictError}
+   * @throws {@link Darwin.ServiceUnavailableError}
+   * @throws {@link errors.DarwinError}
+   * @throws {@link errors.DarwinTimeoutError}
+   *
+   * @example
+   *     await client.endAction({
+   *         actionId: "actionId",
+   *         expectedRevision: 7,
+   *         intent: "finish",
+   *         requestId: "request_end_01J9Y8M4Z7B9R6K2X3C5V1N0PQ"
+   *     })
+   */
+  endAction(request, requestOptions) {
+    return core.HttpResponsePromise.fromPromise(this.__endAction(request, requestOptions));
+  }
+  __endAction(request, requestOptions) {
+    return __awaiter(this, void 0, void 0, function* () {
+      var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+      const { actionId } = request,
+        _body = __rest(request, ['actionId']);
+      const _authRequest = yield this._options.authProvider.getAuthRequest();
+      const _headers = (0, headers_js_1.mergeHeaders)(
+        _authRequest.headers,
+        (_a = this._options) === null || _a === void 0 ? void 0 : _a.headers,
+        requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.headers,
+      );
+      const _response = yield core.fetcher({
+        url: core.url.join(
+          (_c =
+            (_b = yield core.Supplier.get(this._options.baseUrl)) !== null && _b !== void 0
+              ? _b
+              : yield core.Supplier.get(this._options.environment)) !== null && _c !== void 0
+            ? _c
+            : environments.DarwinEnvironment.Default,
+          `actions/${core.url.encodePathParam(actionId)}/end`,
+        ),
+        method: 'POST',
+        headers: _headers,
+        contentType: 'application/json',
+        queryString: core.url
+          .queryBuilder()
+          .mergeAdditional(requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.queryParams)
+          .build(),
+        requestType: 'json',
+        body: (0, requestBody_js_1.mergeAdditionalBodyParameters)(
+          _body,
+          requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.additionalBodyParameters,
+        ),
+        timeoutMs:
+          ((_f =
+            (_d = requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.timeoutInSeconds) !==
+              null && _d !== void 0
+              ? _d
+              : (_e = this._options) === null || _e === void 0
+                ? void 0
+                : _e.timeoutInSeconds) !== null && _f !== void 0
+            ? _f
+            : 60) * 1000,
+        maxRetries:
+          (_g = requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.maxRetries) !== null &&
+          _g !== void 0
+            ? _g
+            : (_h = this._options) === null || _h === void 0
+              ? void 0
+              : _h.maxRetries,
+        abortSignal: requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.abortSignal,
+        fetchFn: (_j = this._options) === null || _j === void 0 ? void 0 : _j.fetch,
+        logging: this._options.logging,
+      });
+      if (_response.ok) {
+        return { data: _response.body, rawResponse: _response.rawResponse };
+      }
+      if (_response.error.reason === 'status-code') {
+        switch (_response.error.statusCode) {
+          case 400:
+            throw new Darwin.BadRequestError(_response.error.body, _response.rawResponse);
+          case 401:
+            throw new Darwin.UnauthorizedError(_response.error.body, _response.rawResponse);
+          case 403:
+            throw new Darwin.ForbiddenError(_response.error.body, _response.rawResponse);
+          case 404:
+            throw new Darwin.NotFoundError(_response.error.body, _response.rawResponse);
+          case 409:
+            throw new Darwin.ConflictError(_response.error.body, _response.rawResponse);
+          case 503:
+            throw new Darwin.ServiceUnavailableError(_response.error.body, _response.rawResponse);
+          default:
+            throw new errors.DarwinError({
+              statusCode: _response.error.statusCode,
+              body: _response.error.body,
+              rawResponse: _response.rawResponse,
+            });
+        }
+      }
+      return (0, handleNonStatusCodeError_js_1.handleNonStatusCodeError)(
+        _response.error,
+        _response.rawResponse,
+        'POST',
+        '/actions/{actionId}/end',
+      );
+    });
+  }
+  /**
+   * List application keys and existing legacy user-bound keys for the signed-in account. Plaintext secrets are never included.
+   *
+   * @param {DarwinClient.RequestOptions} requestOptions - Request-specific configuration.
+   *
+   * @throws {@link Darwin.UnauthorizedError}
+   * @throws {@link Darwin.ServiceUnavailableError}
+   * @throws {@link errors.DarwinError}
+   * @throws {@link errors.DarwinTimeoutError}
+   *
+   * @example
+   *     await client.listApiKeys()
+   */
+  listApiKeys(requestOptions) {
+    return core.HttpResponsePromise.fromPromise(this.__listApiKeys(requestOptions));
+  }
+  __listApiKeys(requestOptions) {
+    return __awaiter(this, void 0, void 0, function* () {
+      var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+      const _authRequest = yield this._options.authProvider.getAuthRequest();
+      const _headers = (0, headers_js_1.mergeHeaders)(
+        _authRequest.headers,
+        (_a = this._options) === null || _a === void 0 ? void 0 : _a.headers,
+        requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.headers,
+      );
+      const _response = yield core.fetcher({
+        url: core.url.join(
+          (_c =
+            (_b = yield core.Supplier.get(this._options.baseUrl)) !== null && _b !== void 0
+              ? _b
+              : yield core.Supplier.get(this._options.environment)) !== null && _c !== void 0
+            ? _c
+            : environments.DarwinEnvironment.Default,
+          'account/api-keys',
+        ),
+        method: 'GET',
+        headers: _headers,
+        queryString: core.url
+          .queryBuilder()
+          .mergeAdditional(requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.queryParams)
+          .build(),
+        timeoutMs:
+          ((_f =
+            (_d = requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.timeoutInSeconds) !==
+              null && _d !== void 0
+              ? _d
+              : (_e = this._options) === null || _e === void 0
+                ? void 0
+                : _e.timeoutInSeconds) !== null && _f !== void 0
+            ? _f
+            : 60) * 1000,
+        maxRetries:
+          (_g = requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.maxRetries) !== null &&
+          _g !== void 0
+            ? _g
+            : (_h = this._options) === null || _h === void 0
+              ? void 0
+              : _h.maxRetries,
+        abortSignal: requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.abortSignal,
+        fetchFn: (_j = this._options) === null || _j === void 0 ? void 0 : _j.fetch,
+        logging: this._options.logging,
+      });
+      if (_response.ok) {
+        return { data: _response.body, rawResponse: _response.rawResponse };
+      }
+      if (_response.error.reason === 'status-code') {
+        switch (_response.error.statusCode) {
+          case 401:
+            throw new Darwin.UnauthorizedError(_response.error.body, _response.rawResponse);
+          case 503:
+            throw new Darwin.ServiceUnavailableError(_response.error.body, _response.rawResponse);
+          default:
+            throw new errors.DarwinError({
+              statusCode: _response.error.statusCode,
+              body: _response.error.body,
+              rawResponse: _response.rawResponse,
+            });
+        }
+      }
+      return (0, handleNonStatusCodeError_js_1.handleNonStatusCodeError)(
+        _response.error,
+        _response.rawResponse,
+        'GET',
+        '/account/api-keys',
+      );
+    });
+  }
+  /**
+   * Create an application-only key for an owned application. It can Search public capabilities but cannot impersonate a user or Act. The plaintext apiKey is returned once. Requires a verified account session.
+   *
+   * @param {Darwin.CreateApiKeyRequest} request
+   * @param {DarwinClient.RequestOptions} requestOptions - Request-specific configuration.
+   *
+   * @throws {@link Darwin.BadRequestError}
+   * @throws {@link Darwin.UnauthorizedError}
+   * @throws {@link Darwin.TooManyRequestsError}
+   * @throws {@link Darwin.ServiceUnavailableError}
+   * @throws {@link errors.DarwinError}
+   * @throws {@link errors.DarwinTimeoutError}
+   *
+   * @example
+   *     await client.createApiKey({
+   *         applicationId: "applicationId",
+   *         name: "Production server"
+   *     })
+   */
+  createApiKey(request, requestOptions) {
+    return core.HttpResponsePromise.fromPromise(this.__createApiKey(request, requestOptions));
+  }
+  __createApiKey(request, requestOptions) {
+    return __awaiter(this, void 0, void 0, function* () {
+      var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+      const _authRequest = yield this._options.authProvider.getAuthRequest();
+      const _headers = (0, headers_js_1.mergeHeaders)(
+        _authRequest.headers,
+        (_a = this._options) === null || _a === void 0 ? void 0 : _a.headers,
+        requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.headers,
+      );
+      const _response = yield core.fetcher({
+        url: core.url.join(
+          (_c =
+            (_b = yield core.Supplier.get(this._options.baseUrl)) !== null && _b !== void 0
+              ? _b
+              : yield core.Supplier.get(this._options.environment)) !== null && _c !== void 0
+            ? _c
+            : environments.DarwinEnvironment.Default,
+          'account/api-keys',
+        ),
+        method: 'POST',
+        headers: _headers,
+        contentType: 'application/json',
+        queryString: core.url
+          .queryBuilder()
+          .mergeAdditional(requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.queryParams)
+          .build(),
+        requestType: 'json',
+        body: (0, requestBody_js_1.mergeAdditionalBodyParameters)(
+          request,
+          requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.additionalBodyParameters,
+        ),
+        timeoutMs:
+          ((_f =
+            (_d = requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.timeoutInSeconds) !==
+              null && _d !== void 0
+              ? _d
+              : (_e = this._options) === null || _e === void 0
+                ? void 0
+                : _e.timeoutInSeconds) !== null && _f !== void 0
+            ? _f
+            : 60) * 1000,
+        maxRetries:
+          (_g = requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.maxRetries) !== null &&
+          _g !== void 0
+            ? _g
+            : (_h = this._options) === null || _h === void 0
+              ? void 0
+              : _h.maxRetries,
+        abortSignal: requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.abortSignal,
+        fetchFn: (_j = this._options) === null || _j === void 0 ? void 0 : _j.fetch,
+        logging: this._options.logging,
+      });
+      if (_response.ok) {
+        return { data: _response.body, rawResponse: _response.rawResponse };
+      }
+      if (_response.error.reason === 'status-code') {
+        switch (_response.error.statusCode) {
+          case 400:
+            throw new Darwin.BadRequestError(_response.error.body, _response.rawResponse);
+          case 401:
+            throw new Darwin.UnauthorizedError(_response.error.body, _response.rawResponse);
+          case 429:
+            throw new Darwin.TooManyRequestsError(_response.error.body, _response.rawResponse);
+          case 503:
+            throw new Darwin.ServiceUnavailableError(_response.error.body, _response.rawResponse);
+          default:
+            throw new errors.DarwinError({
+              statusCode: _response.error.statusCode,
+              body: _response.error.body,
+              rawResponse: _response.rawResponse,
+            });
+        }
+      }
+      return (0, handleNonStatusCodeError_js_1.handleNonStatusCodeError)(
+        _response.error,
+        _response.rawResponse,
+        'POST',
+        '/account/api-keys',
+      );
+    });
+  }
+  /**
+   * Get lifetime authenticated-request counts for the account and each API key. This is operational key usage, not billable Action spend. Requires an authenticated account session.
+   *
+   * @param {DarwinClient.RequestOptions} requestOptions - Request-specific configuration.
+   *
+   * @throws {@link Darwin.UnauthorizedError}
+   * @throws {@link Darwin.ServiceUnavailableError}
+   * @throws {@link errors.DarwinError}
+   * @throws {@link errors.DarwinTimeoutError}
+   *
+   * @example
+   *     await client.getApiUsage()
+   */
+  getApiUsage(requestOptions) {
+    return core.HttpResponsePromise.fromPromise(this.__getApiUsage(requestOptions));
+  }
+  __getApiUsage(requestOptions) {
+    return __awaiter(this, void 0, void 0, function* () {
+      var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+      const _authRequest = yield this._options.authProvider.getAuthRequest();
+      const _headers = (0, headers_js_1.mergeHeaders)(
+        _authRequest.headers,
+        (_a = this._options) === null || _a === void 0 ? void 0 : _a.headers,
+        requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.headers,
+      );
+      const _response = yield core.fetcher({
+        url: core.url.join(
+          (_c =
+            (_b = yield core.Supplier.get(this._options.baseUrl)) !== null && _b !== void 0
+              ? _b
+              : yield core.Supplier.get(this._options.environment)) !== null && _c !== void 0
+            ? _c
+            : environments.DarwinEnvironment.Default,
+          'account/api-keys/usage',
+        ),
+        method: 'GET',
+        headers: _headers,
+        queryString: core.url
+          .queryBuilder()
+          .mergeAdditional(requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.queryParams)
+          .build(),
+        timeoutMs:
+          ((_f =
+            (_d = requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.timeoutInSeconds) !==
+              null && _d !== void 0
+              ? _d
+              : (_e = this._options) === null || _e === void 0
+                ? void 0
+                : _e.timeoutInSeconds) !== null && _f !== void 0
+            ? _f
+            : 60) * 1000,
+        maxRetries:
+          (_g = requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.maxRetries) !== null &&
+          _g !== void 0
+            ? _g
+            : (_h = this._options) === null || _h === void 0
+              ? void 0
+              : _h.maxRetries,
+        abortSignal: requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.abortSignal,
+        fetchFn: (_j = this._options) === null || _j === void 0 ? void 0 : _j.fetch,
+        logging: this._options.logging,
+      });
+      if (_response.ok) {
+        return { data: _response.body, rawResponse: _response.rawResponse };
+      }
+      if (_response.error.reason === 'status-code') {
+        switch (_response.error.statusCode) {
+          case 401:
+            throw new Darwin.UnauthorizedError(_response.error.body, _response.rawResponse);
+          case 503:
+            throw new Darwin.ServiceUnavailableError(_response.error.body, _response.rawResponse);
+          default:
+            throw new errors.DarwinError({
+              statusCode: _response.error.statusCode,
+              body: _response.error.body,
+              rawResponse: _response.rawResponse,
+            });
+        }
+      }
+      return (0, handleNonStatusCodeError_js_1.handleNonStatusCodeError)(
+        _response.error,
+        _response.rawResponse,
+        'GET',
+        '/account/api-keys/usage',
+      );
+    });
+  }
+  /**
+   * Revoke an API key owned by the signed-in Darwin account. Revocation is immediate and keeps non-secret audit metadata. Requires an authenticated account session.
+   *
+   * @param {Darwin.DeleteApiKeyRequest} request
+   * @param {DarwinClient.RequestOptions} requestOptions - Request-specific configuration.
+   *
+   * @throws {@link Darwin.UnauthorizedError}
+   * @throws {@link Darwin.NotFoundError}
+   * @throws {@link Darwin.ServiceUnavailableError}
+   * @throws {@link errors.DarwinError}
+   * @throws {@link errors.DarwinTimeoutError}
+   *
+   * @example
+   *     await client.deleteApiKey({
+   *         apiKeyId: "apiKeyId"
+   *     })
+   */
+  deleteApiKey(request, requestOptions) {
+    return core.HttpResponsePromise.fromPromise(this.__deleteApiKey(request, requestOptions));
+  }
+  __deleteApiKey(request, requestOptions) {
+    return __awaiter(this, void 0, void 0, function* () {
+      var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+      const { apiKeyId } = request;
+      const _authRequest = yield this._options.authProvider.getAuthRequest();
+      const _headers = (0, headers_js_1.mergeHeaders)(
+        _authRequest.headers,
+        (_a = this._options) === null || _a === void 0 ? void 0 : _a.headers,
+        requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.headers,
+      );
+      const _response = yield core.fetcher({
+        url: core.url.join(
+          (_c =
+            (_b = yield core.Supplier.get(this._options.baseUrl)) !== null && _b !== void 0
+              ? _b
+              : yield core.Supplier.get(this._options.environment)) !== null && _c !== void 0
+            ? _c
+            : environments.DarwinEnvironment.Default,
+          `account/api-keys/${core.url.encodePathParam(apiKeyId)}`,
+        ),
+        method: 'DELETE',
+        headers: _headers,
+        queryString: core.url
+          .queryBuilder()
+          .mergeAdditional(requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.queryParams)
+          .build(),
+        timeoutMs:
+          ((_f =
+            (_d = requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.timeoutInSeconds) !==
+              null && _d !== void 0
+              ? _d
+              : (_e = this._options) === null || _e === void 0
+                ? void 0
+                : _e.timeoutInSeconds) !== null && _f !== void 0
+            ? _f
+            : 60) * 1000,
+        maxRetries:
+          (_g = requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.maxRetries) !== null &&
+          _g !== void 0
+            ? _g
+            : (_h = this._options) === null || _h === void 0
+              ? void 0
+              : _h.maxRetries,
+        abortSignal: requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.abortSignal,
+        fetchFn: (_j = this._options) === null || _j === void 0 ? void 0 : _j.fetch,
+        logging: this._options.logging,
+      });
+      if (_response.ok) {
+        return { data: _response.body, rawResponse: _response.rawResponse };
+      }
+      if (_response.error.reason === 'status-code') {
+        switch (_response.error.statusCode) {
+          case 401:
+            throw new Darwin.UnauthorizedError(_response.error.body, _response.rawResponse);
+          case 404:
+            throw new Darwin.NotFoundError(_response.error.body, _response.rawResponse);
+          case 503:
+            throw new Darwin.ServiceUnavailableError(_response.error.body, _response.rawResponse);
+          default:
+            throw new errors.DarwinError({
+              statusCode: _response.error.statusCode,
+              body: _response.error.body,
+              rawResponse: _response.rawResponse,
+            });
+        }
+      }
+      return (0, handleNonStatusCodeError_js_1.handleNonStatusCodeError)(
+        _response.error,
+        _response.rawResponse,
+        'DELETE',
+        '/account/api-keys/{apiKeyId}',
+      );
+    });
+  }
+  /**
+   * List Search-history entries retained for up to 90 days for a user-bound legacy key or user-scoped OAuth grant. Application-only keys cannot read a user’s history.
+   *
+   * @param {Darwin.ListSearchHistoryRequest} request
+   * @param {DarwinClient.RequestOptions} requestOptions - Request-specific configuration.
+   *
+   * @throws {@link Darwin.BadRequestError}
+   * @throws {@link Darwin.UnauthorizedError}
+   * @throws {@link Darwin.ForbiddenError}
+   * @throws {@link Darwin.ServiceUnavailableError}
+   * @throws {@link errors.DarwinError}
+   * @throws {@link errors.DarwinTimeoutError}
+   *
+   * @example
+   *     await client.listSearchHistory()
+   */
+  listSearchHistory(request = {}, requestOptions) {
+    return core.HttpResponsePromise.fromPromise(this.__listSearchHistory(request, requestOptions));
+  }
+  __listSearchHistory() {
+    return __awaiter(this, arguments, void 0, function* (request = {}, requestOptions) {
+      var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+      const { cursor, limit } = request;
+      const _queryParams = {
+        cursor,
+        limit,
+      };
+      const _authRequest = yield this._options.authProvider.getAuthRequest();
+      const _headers = (0, headers_js_1.mergeHeaders)(
+        _authRequest.headers,
+        (_a = this._options) === null || _a === void 0 ? void 0 : _a.headers,
+        requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.headers,
+      );
+      const _response = yield core.fetcher({
+        url: core.url.join(
+          (_c =
+            (_b = yield core.Supplier.get(this._options.baseUrl)) !== null && _b !== void 0
+              ? _b
+              : yield core.Supplier.get(this._options.environment)) !== null && _c !== void 0
+            ? _c
+            : environments.DarwinEnvironment.Default,
+          'account/searches',
+        ),
+        method: 'GET',
+        headers: _headers,
+        queryString: core.url
+          .queryBuilder()
+          .addMany(_queryParams)
+          .mergeAdditional(requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.queryParams)
+          .build(),
+        timeoutMs:
+          ((_f =
+            (_d = requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.timeoutInSeconds) !==
+              null && _d !== void 0
+              ? _d
+              : (_e = this._options) === null || _e === void 0
+                ? void 0
+                : _e.timeoutInSeconds) !== null && _f !== void 0
+            ? _f
+            : 60) * 1000,
+        maxRetries:
+          (_g = requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.maxRetries) !== null &&
+          _g !== void 0
+            ? _g
+            : (_h = this._options) === null || _h === void 0
+              ? void 0
+              : _h.maxRetries,
+        abortSignal: requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.abortSignal,
+        fetchFn: (_j = this._options) === null || _j === void 0 ? void 0 : _j.fetch,
+        logging: this._options.logging,
+      });
+      if (_response.ok) {
+        return { data: _response.body, rawResponse: _response.rawResponse };
+      }
+      if (_response.error.reason === 'status-code') {
+        switch (_response.error.statusCode) {
+          case 400:
+            throw new Darwin.BadRequestError(_response.error.body, _response.rawResponse);
+          case 401:
+            throw new Darwin.UnauthorizedError(_response.error.body, _response.rawResponse);
+          case 403:
+            throw new Darwin.ForbiddenError(_response.error.body, _response.rawResponse);
+          case 503:
+            throw new Darwin.ServiceUnavailableError(_response.error.body, _response.rawResponse);
+          default:
+            throw new errors.DarwinError({
+              statusCode: _response.error.statusCode,
+              body: _response.error.body,
+              rawResponse: _response.rawResponse,
+            });
+        }
+      }
+      return (0, handleNonStatusCodeError_js_1.handleNonStatusCodeError)(
+        _response.error,
+        _response.rawResponse,
+        'GET',
+        '/account/searches',
+      );
+    });
   }
   /**
    * Make a passthrough request using the SDK's configured auth, retry, logging, etc.

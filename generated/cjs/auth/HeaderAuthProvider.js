@@ -85,7 +85,6 @@ var __awaiter =
 Object.defineProperty(exports, '__esModule', { value: true });
 exports.HeaderAuthProvider = void 0;
 const core = __importStar(require('../core/index.js'));
-const errors = __importStar(require('../errors/index.js'));
 const PARAM_KEY = 'apiKey';
 const ENV_HEADER_KEY = 'DARWIN_API_KEY';
 const HEADER_NAME = 'x-api-key';
@@ -97,7 +96,8 @@ class HeaderAuthProvider {
     var _a;
     return (
       (options === null || options === void 0 ? void 0 : options[PARAM_KEY]) != null ||
-      ((_a = process.env) === null || _a === void 0 ? void 0 : _a[ENV_HEADER_KEY]) != null
+      (typeof process !== 'undefined' &&
+        ((_a = process.env) === null || _a === void 0 ? void 0 : _a[ENV_HEADER_KEY]) != null)
     );
   }
   getAuthRequest() {
@@ -106,13 +106,13 @@ class HeaderAuthProvider {
       const headerValue =
         (_a = yield core.Supplier.get(this.options[PARAM_KEY])) !== null && _a !== void 0
           ? _a
-          : (_b = process.env) === null || _b === void 0
-            ? void 0
-            : _b[ENV_HEADER_KEY];
+          : typeof process !== 'undefined'
+            ? (_b = process.env) === null || _b === void 0
+              ? void 0
+              : _b[ENV_HEADER_KEY]
+            : undefined;
       if (headerValue == null) {
-        throw new errors.DarwinError({
-          message: HeaderAuthProvider.AUTH_CONFIG_ERROR_MESSAGE,
-        });
+        return { headers: {} };
       }
       return {
         headers: { [HEADER_NAME]: headerValue },

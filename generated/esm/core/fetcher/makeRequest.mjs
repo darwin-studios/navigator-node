@@ -1,55 +1,51 @@
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-import { anySignal, getTimeoutSignal } from "./signals.mjs";
-/**
- * Cached result of checking whether the current runtime supports
- * the `cache` option in `Request`. Some runtimes (e.g. Cloudflare Workers)
- * throw a TypeError when this option is used.
- */
-let _cacheNoStoreSupported;
+// Generated from apps/navigator/api/sdk/src/transport/make-request.ts. Do not edit.
+/** Darwin transport customization. Compiled by scripts/build-transport.mjs.
+ * Keep abort propagation through response-body consumption, without attaching
+ * one persistent listener to the caller's signal on every bounded read. */
+let cacheNoStoreSupported;
 export function isCacheNoStoreSupported() {
-    if (_cacheNoStoreSupported != null) {
-        return _cacheNoStoreSupported;
-    }
+    if (cacheNoStoreSupported !== undefined)
+        return cacheNoStoreSupported;
     try {
-        new Request("http://localhost", { cache: "no-store" });
-        _cacheNoStoreSupported = true;
+        new Request('http://localhost', { cache: 'no-store' });
+        cacheNoStoreSupported = true;
     }
-    catch (_a) {
-        _cacheNoStoreSupported = false;
+    catch {
+        cacheNoStoreSupported = false;
     }
-    return _cacheNoStoreSupported;
+    return cacheNoStoreSupported;
 }
-/**
- * Reset the cached result of `isCacheNoStoreSupported`. Exposed for testing only.
- */
 export function resetCacheNoStoreSupported() {
-    _cacheNoStoreSupported = undefined;
+    cacheNoStoreSupported = undefined;
 }
-export const makeRequest = (fetchFn, url, method, headers, requestBody, timeoutMs, abortSignal, withCredentials, duplex, disableCache) => __awaiter(void 0, void 0, void 0, function* () {
-    const signals = [];
-    let timeoutAbortId;
-    if (timeoutMs != null) {
-        const { signal, abortId } = getTimeoutSignal(timeoutMs);
-        timeoutAbortId = abortId;
-        signals.push(signal);
+export async function makeRequest(fetchFn, url, method, headers, requestBody, timeoutMs, abortSignal, withCredentials, duplex, disableCache) {
+    const deadline = new AbortController();
+    // Native composition uses weak dependencies, not persistent caller listeners.
+    // Node >=20.3 and modern browsers support it; package engines declare this.
+    const signal = abortSignal ? AbortSignal.any([abortSignal, deadline.signal]) : deadline.signal;
+    signal.throwIfAborted();
+    let timer;
+    try {
+        if (timeoutMs !== undefined && timeoutMs !== Infinity) {
+            if (!Number.isFinite(timeoutMs) || timeoutMs < 0 || timeoutMs > 2 ** 31 - 1) {
+                throw new RangeError('Request timeout must be a nonnegative finite duration or Infinity.');
+            }
+            // AbortError retains the generated client's typed timeout classification.
+            timer = setTimeout(() => deadline.abort(new DOMException('Request timed out', 'AbortError')), timeoutMs);
+        }
+        const init = {
+            method,
+            headers,
+            body: requestBody,
+            signal,
+            credentials: withCredentials ? 'include' : undefined,
+            duplex,
+            ...(disableCache && isCacheNoStoreSupported() ? { cache: 'no-store' } : {}),
+        };
+        return await fetchFn(url, init);
     }
-    if (abortSignal != null) {
-        signals.push(abortSignal);
+    finally {
+        if (timer !== undefined)
+            clearTimeout(timer);
     }
-    const newSignals = anySignal(signals);
-    const response = yield fetchFn(url, Object.assign({ method: method, headers, body: requestBody, signal: newSignals, credentials: withCredentials ? "include" : undefined, 
-        // @ts-ignore
-        duplex }, (disableCache && isCacheNoStoreSupported() ? { cache: "no-store" } : {})));
-    if (timeoutAbortId != null) {
-        clearTimeout(timeoutAbortId);
-    }
-    return response;
-});
+}

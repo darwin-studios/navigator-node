@@ -1,9 +1,7 @@
+// Generated from apps/navigator/api/sdk/src/transport/make-request.ts. Do not edit.
 export declare function isCacheNoStoreSupported(): boolean;
-/**
- * Reset the cached result of `isCacheNoStoreSupported`. Exposed for testing only.
- */
 export declare function resetCacheNoStoreSupported(): void;
-export declare const makeRequest: (
+export declare function makeRequest(
   fetchFn: (url: string, init: RequestInit) => Promise<Response>,
   url: string,
   method: string,
@@ -14,4 +12,4 @@ export declare const makeRequest: (
   withCredentials?: boolean,
   duplex?: 'half',
   disableCache?: boolean,
-) => Promise<Response>;
+): Promise<Response>;

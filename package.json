@@ -1,6 +1,6 @@
 {
   "name": "@darwinso/sdk",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Official TypeScript SDK for Darwin",
   "keywords": [
     "darwin",
@@ -16,14 +16,23 @@
     "url": "git+https://github.com/darwin-studios/darwin-node.git"
   },
   "license": "MIT",
-  "packageManager": "pnpm@10.6.3",
   "exports": {
     ".": {
       "types": "./generated/esm/index.d.mts",
       "import": "./generated/esm/index.mjs",
       "require": "./generated/cjs/index.js"
     },
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./openai": {
+      "import": {
+        "types": "./generated/esm/openai/index.d.mts",
+        "default": "./generated/esm/openai/index.mjs"
+      },
+      "require": {
+        "types": "./generated/cjs/openai/index.d.ts",
+        "default": "./generated/cjs/openai/index.js"
+      }
+    }
   },
   "main": "./generated/cjs/index.js",
   "module": "./generated/esm/index.mjs",
@@ -34,9 +43,24 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "node scripts/verify-generated.mjs",
-    "check-types": "node scripts/verify-generated.mjs",
-    "test": "node scripts/verify-generated.mjs && node --test test/*.test.mjs"
+    "build": "node scripts/verify-generated.mjs && node scripts/build-transport.mjs --check && node scripts/build-openai.mjs --check",
+    "build:openai": "node scripts/build-openai.mjs",
+    "build:transport": "node scripts/build-transport.mjs",
+    "check-types": "tsc --noEmit --strict --skipLibCheck --module NodeNext --target ES2022 test/thread-types.mts src/transport/make-request.ts",
+    "test": "node scripts/verify-generated.mjs && node scripts/build-transport.mjs --check && node scripts/build-openai.mjs --check && pnpm check-types && node --test test/*.test.mjs"
+  },
+  "dependencies": {
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "esbuild": "0.25.12",
+    "prettier": "3.8.2",
+    "typescript": "5.9.2",
+    "@types/node": "25.9.1"
+  },
+  "packageManager": "pnpm@10.6.3",
+  "engines": {
+    "node": ">=20.3"
   },
   "publishConfig": {
     "access": "public",

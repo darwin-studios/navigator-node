@@ -2,19 +2,17 @@
  * @example
  *     {
  *         email: "email",
- *         password: "password",
- *         name: "name",
- *         type: "personal"
+ *         password: "password"
  *     }
  */
 export interface CreateAccountRequest {
   email: string;
   password: string;
-  name: string;
-  type: CreateAccountRequest.Type;
-  /** Required for business and software. */
+  name?: string;
+  type?: CreateAccountRequest.Type;
+  /** Optional legacy account metadata; agent type is chosen when creating an agent. */
   organizationName?: string;
-  /** Required for business and software; not ownership proof. */
+  /** Optional legacy metadata; not ownership proof. */
   organizationDomain?: string;
 }
 export declare namespace CreateAccountRequest {

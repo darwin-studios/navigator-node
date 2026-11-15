@@ -11,6 +11,7 @@ The Darwin TypeScript library provides convenient access to the Darwin APIs from
 - [Environments](#environments)
 - [Request and Response Types](#request-and-response-types)
 - [Exception Handling](#exception-handling)
+- [Streaming Response](#streaming-response)
 - [Advanced](#advanced)
   - [Additional Headers](#additional-headers)
   - [Additional Query String Parameters](#additional-query-string-parameters)
@@ -35,8 +36,11 @@ Instantiate and use the client with the following:
 import { DarwinClient } from "./src/Client";
 
 const client = new DarwinClient({ apiKey: "YOUR_API_KEY" });
-await client.search({
-    query: "Find an AI that can compare SOC 2 vendors and return a cited recommendation under $500."
+await client.createAccountAgent({
+    "Idempotency-Key": "Idempotency-Key",
+    type: "personal",
+    name: "name",
+    handle: "handle"
 });
 ```
 
@@ -60,7 +64,7 @@ following namespace:
 ```typescript
 import { Darwin } from "Darwin";
 
-const request: Darwin.SearchRequest = {
+const request: Darwin.CreateAccountAgentRequest = {
     ...
 };
 ```
@@ -74,7 +78,7 @@ will be thrown.
 import { DarwinError } from "Darwin";
 
 try {
-    await client.search(...);
+    await client.createAccountAgent(...);
 } catch (err) {
     if (err instanceof DarwinError) {
         console.log(err.statusCode);
@@ -82,6 +86,23 @@ try {
         console.log(err.body);
         console.log(err.rawResponse);
     }
+}
+```
+
+## Streaming Response
+
+Some endpoints return streaming responses instead of returning the full response at once.
+The SDK uses async iterators, so you can consume the responses using a `for await...of` loop.
+
+```typescript
+import { DarwinClient } from "./src/Client";
+
+const client = new DarwinClient({ apiKey: "YOUR_API_KEY" });
+const response = await client.getSessionEvents({
+    sessionId: "sessionId"
+});
+for await (const item of response) {
+    console.log(item);
 }
 ```
 
@@ -101,7 +122,7 @@ const client = new DarwinClient({
     }
 });
 
-const response = await client.search(..., {
+const response = await client.createAccountAgent(..., {
     headers: {
         'X-Custom-Header': 'custom value'
     }
@@ -113,7 +134,7 @@ const response = await client.search(..., {
 If you would like to send additional query string parameters as part of the request, use the `queryParams` request option.
 
 ```typescript
-const response = await client.search(..., {
+const response = await client.createAccountAgent(..., {
     queryParams: {
         'customQueryParamKey': 'custom query param value'
     }
@@ -143,7 +164,7 @@ Which status codes are retried depends on the `retryStatusCodes` generator confi
 Use the `maxRetries` request option to configure this behavior.
 
 ```typescript
-const response = await client.search(..., {
+const response = await client.createAccountAgent(..., {
     maxRetries: 0 // override maxRetries at the request level
 });
 ```
@@ -153,7 +174,7 @@ const response = await client.search(..., {
 The SDK defaults to a 60 second timeout. Use the `timeoutInSeconds` option to configure this behavior.
 
 ```typescript
-const response = await client.search(..., {
+const response = await client.createAccountAgent(..., {
     timeoutInSeconds: 30 // override timeout to 30s
 });
 ```
@@ -164,7 +185,7 @@ The SDK allows users to abort requests at any point by passing in an abort signa
 
 ```typescript
 const controller = new AbortController();
-const response = await client.search(..., {
+const response = await client.createAccountAgent(..., {
     abortSignal: controller.signal
 });
 controller.abort(); // aborts the request
@@ -176,7 +197,7 @@ The SDK provides access to raw response data, including headers, through the `.w
 The `.withRawResponse()` method returns a promise that results to an object with a `data` and a `rawResponse` property.
 
 ```typescript
-const { data, rawResponse } = await client.search(...).withRawResponse();
+const { data, rawResponse } = await client.createAccountAgent(...).withRawResponse();
 
 console.log(data);
 console.log(rawResponse.headers['X-My-Header']);

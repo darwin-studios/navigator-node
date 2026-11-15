@@ -1,0 +1,529 @@
+import { z } from 'zod';
+
+import {
+  ownerFileInputCapabilitySchema,
+  paymentRailSchema,
+  paymentRequestSchema,
+  THREAD_EVENT_SENDER_TYPES,
+  threadEventPayloadSchema,
+  type ActThreadOperation,
+  type PaymentRail,
+} from './act-threads.js';
+
+export {
+  THREAD_TOOL_SELECTION_REQUIRED,
+  projectThreadToolSelectionRequired,
+  threadToolSelectionInputSchema,
+  threadToolSelectionRequiredErrorSchema,
+  type ThreadToolSelectionRequiredError,
+} from './thread-tool-selection.js';
+
+// Public projections only. Provider objects, credentials and encrypted storage
+// envelopes must fail validation, never become undocumented response fields.
+const id = z
+  .string()
+  .min(1)
+  .max(200)
+  .regex(/^[A-Za-z0-9][A-Za-z0-9_.:-]*$/);
+const revision = z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER);
+const digest = z.string().regex(/^[a-f0-9]{64}$/);
+const cursor = z
+  .string()
+  .min(3)
+  .max(200)
+  .regex(/^.+:(0|[1-9][0-9]*)$/);
+const jsonObject = z.record(z.string(), z.json());
+const delivery = z.enum(['accepted', 'delivered', 'failed', 'unknown']);
+const hostedUrl = z.url().max(2048);
+const accountBackedPaymentRailSchema = z.enum(['card', 'bank', 'mpp', 'x402', 'ucp', 'acp']);
+
+/** First-party read-only eligibility, not a new public Act operation or authority to spend. */
+export const threadPaymentOptionsSchema = z
+  .object({
+    paymentRequestId: id,
+    actingAiId: id,
+    targetAiId: id,
+    requestRevision: revision,
+    requestDigest: digest,
+    expiresAt: z.iso.datetime(),
+    amountMinor: z
+      .string()
+      .regex(/^[1-9][0-9]{0,17}$/)
+      .optional(),
+    currency: z
+      .string()
+      .regex(/^[A-Z]{3}$/)
+      .optional(),
+    payeeId: id.optional(),
+    payeeName: z.string().min(1).max(200).optional(),
+    actionId: id.optional(),
+    sellerVerification: z
+      .enum(['unverified', 'verified_developer', 'darwin'])
+      .optional()
+      .describe('Independent seller identity review. Never grants payment eligibility or permission to spend.'),
+    eligibleMethods: z
+      .array(
+        z.discriminatedUnion('kind', [
+          z.object({ kind: z.literal('hosted_checkout'), method: z.literal('hosted_checkout') }).strict(),
+          z.object({ kind: z.literal('saved_method'), method: accountBackedPaymentRailSchema }).strict(),
+          z.object({ kind: z.literal('darwin_wallet'), method: z.literal('darwin_wallet') }).strict(),
+        ]),
+      )
+      .max(8),
+    savedMethods: z
+      .array(
+        z
+          .object({
+            paymentMethodId: id,
+            label: z.string().min(1).max(100),
+            method: accountBackedPaymentRailSchema,
+            expiresAt: z.iso.datetime(),
+            isDefault: z
+              .boolean()
+              .optional()
+              .describe('A saved preference within its provider and rail, never permission to pay.'),
+          })
+          .strict(),
+      )
+      .max(100),
+    unavailableMethods: z
+      .array(
+        z
+          .object({
+            method: paymentRailSchema,
+            reason: z.enum(['provider_unavailable', 'saved_method_unavailable']),
+          })
+          .strict(),
+      )
+      .max(8),
+    unavailableReason: z
+      .enum([
+        'request_expired',
+        'payment_settled',
+        'payment_failed',
+        'payment_voided',
+        'payment_refunded',
+        'payment_in_progress',
+        'request_not_payable',
+        'unsupported_rail',
+        'provider_unavailable',
+        'saved_method_unavailable',
+      ])
+      .nullable(),
+  })
+  .strict()
+  .superRefine((value, context) => {
+    if ((value.unavailableReason === null) !== value.eligibleMethods.length > 0)
+      context.addIssue({ code: 'custom', message: 'Availability must match eligible methods.' });
+    const eligible = new Set<PaymentRail>(value.eligibleMethods.map((item) => item.method));
+    if (eligible.size !== value.eligibleMethods.length)
+      context.addIssue({ code: 'custom', message: 'Eligible methods must be unique.' });
+    if (new Set(value.savedMethods.map((item) => item.paymentMethodId)).size !== value.savedMethods.length)
+      context.addIssue({ code: 'custom', message: 'Saved methods must be unique.' });
+    if (value.savedMethods.some((item) => !eligible.has(item.method)))
+      context.addIssue({ code: 'custom', message: 'Saved methods require an eligible rail.' });
+    if (
+      value.eligibleMethods.some(
+        (item) => item.kind === 'saved_method' && !value.savedMethods.some((saved) => saved.method === item.method),
+      )
+    )
+      context.addIssue({ code: 'custom', message: 'Saved rails require an eligible method.' });
+    const unavailable = new Set(value.unavailableMethods.map((item) => item.method));
+    if (
+      unavailable.size !== value.unavailableMethods.length ||
+      value.unavailableMethods.some((item) => eligible.has(item.method))
+    )
+      context.addIssue({ code: 'custom', message: 'Unavailable methods must be unique and ineligible.' });
+  });
+export type ThreadPaymentOptions = z.infer<typeof threadPaymentOptionsSchema>;
+
+/** Public account projection. Storage actor IDs never leave this surface. */
+export const accountPaymentOptionsSchema = z
+  .object({
+    paymentRequestId: threadPaymentOptionsSchema.shape.paymentRequestId,
+    targetAgent: threadPaymentOptionsSchema.shape.targetAiId,
+    requestRevision: threadPaymentOptionsSchema.shape.requestRevision,
+    requestDigest: threadPaymentOptionsSchema.shape.requestDigest,
+    expiresAt: threadPaymentOptionsSchema.shape.expiresAt,
+    amountMinor: z.string().regex(/^[1-9][0-9]{0,17}$/),
+    currency: z.string().regex(/^[A-Z]{3}$/),
+    payeeId: id,
+    payeeName: z.string().min(1).max(200),
+    actionId: id,
+    sellerVerification: threadPaymentOptionsSchema.shape.sellerVerification,
+    eligibleMethods: threadPaymentOptionsSchema.shape.eligibleMethods,
+    savedMethods: threadPaymentOptionsSchema.shape.savedMethods,
+    unavailableMethods: threadPaymentOptionsSchema.shape.unavailableMethods,
+    unavailableReason: threadPaymentOptionsSchema.shape.unavailableReason,
+  })
+  .strict();
+
+export const THREAD_DISCOVERY_AUTHENTICATION_REQUIRED = 'THREAD_DISCOVERY_AUTHENTICATION_REQUIRED' as const;
+
+/** A request to authorize discovery, not a thread, executable catalog or effect. */
+export const threadDiscoveryAuthenticationRequestSchema = z
+  .object({
+    authenticationRequestId: id,
+    actingAiId: id,
+    targetAiId: id,
+    purpose: z.literal('discovery'),
+    expiresAt: z.iso.datetime().max(40),
+  })
+  .strict();
+export type ThreadDiscoveryAuthenticationRequest = z.infer<typeof threadDiscoveryAuthenticationRequestSchema>;
+
+export const threadDiscoveryAuthenticationRequiredErrorSchema = z
+  .object({
+    code: z.literal(THREAD_DISCOVERY_AUTHENTICATION_REQUIRED),
+    authenticationRequest: threadDiscoveryAuthenticationRequestSchema,
+    message: z.string().min(1).max(1_000).optional(),
+  })
+  .strict();
+
+export const executableThreadCapabilitySchema = z
+  .object({
+    operationId: id,
+    revision,
+    title: z.string().min(1).max(500),
+    inputSchema: jsonObject,
+    outputSchema: jsonObject.optional(),
+    effect: z.enum(['read_only', 'external_effect']),
+    requiresAuthentication: z.boolean(),
+    ownerFileInputs: ownerFileInputCapabilitySchema.optional(),
+  })
+  .strict();
+
+export const threadOperationStateSchema = z
+  .object({
+    id,
+    operationId: id,
+    requestId: id,
+    status: z.enum([
+      'awaiting_confirmation',
+      'queued',
+      'running',
+      'waiting',
+      'reconciling',
+      'succeeded',
+      'failed',
+      'cancelled',
+      'withdrawn',
+    ]),
+    cancellationRequested: z.boolean(),
+    approvalDenied: z.boolean().optional(),
+    approvalExpired: z.boolean().optional(),
+    paymentExpired: z.boolean().optional(),
+    paymentRevoked: z.boolean().optional(),
+    resultEventId: id.optional(),
+    accepted: z.boolean().optional(),
+    accountId: id.optional(),
+    awaitingAccountProposal: z.boolean().optional(),
+  })
+  .strict();
+
+export const threadPendingRequestSchema = z
+  .object({
+    id,
+    kind: z.enum(threadEventPayloadSchema.options.map((option) => option.shape.type.value)),
+    actionId: id,
+    revision,
+    digest,
+    expiresAt: z.iso.datetime().optional(),
+    resolvedBy: id.optional(),
+    inputResolution: z.enum(['answered', 'expired', 'cancelled']).optional(),
+    paymentResolution: z.enum(['expired', 'cancelled', 'settled']).optional(),
+    paymentStatus: z
+      .enum([
+        'pending',
+        'settled',
+        'failed',
+        'voided',
+        'partially_refunded',
+        'reversal_pending',
+        'reversal_failed',
+        'disputed',
+        'refunded',
+      ])
+      .optional(),
+    refundAmountMinor: z
+      .string()
+      .regex(/^(0|[1-9][0-9]{0,17})$/)
+      .optional(),
+    pendingRefundAmountMinor: paymentRequestSchema.shape.amountMinor.optional(),
+    failedRefundAmountMinor: paymentRequestSchema.shape.amountMinor.optional(),
+    disputeAmountMinor: paymentRequestSchema.shape.amountMinor.optional(),
+    disputeStatus: z
+      .enum([
+        'warning_needs_response',
+        'warning_under_review',
+        'warning_closed',
+        'needs_response',
+        'under_review',
+        'won',
+        'lost',
+      ])
+      .optional(),
+  })
+  .strict()
+  .superRefine((value, context) => {
+    if (value.inputResolution !== undefined && (value.kind !== 'input_request' || !value.resolvedBy))
+      context.addIssue({ code: 'custom', message: 'Input resolution requires its resolved input request.' });
+  });
+
+export const threadEventSchema = z
+  .object({
+    id,
+    threadId: id,
+    sender: z.enum(['acting_ai', 'target_ai', 'runtime', 'payment_broker', 'authentication_broker']),
+    senderAiId: id.nullable(),
+    revision,
+    createdAt: z.iso.datetime(),
+    delivery,
+    requestDigest: digest,
+    payload: threadEventPayloadSchema,
+  })
+  .strict();
+
+const actThreadSnapshotObjectSchema = z
+  .object({
+    threadId: id,
+    goalId: id,
+    actingAiId: id,
+    targetAiId: id,
+    revision,
+    archived: z.boolean(),
+    attention: z.boolean(),
+    cursor,
+    capabilities: z.array(executableThreadCapabilitySchema),
+    operations: z.record(id, threadOperationStateSchema),
+    requests: z.record(id, threadPendingRequestSchema),
+    deliveries: z.record(id, delivery),
+    createdAt: z.iso.datetime(),
+  })
+  .strict();
+
+type Snapshot = z.infer<typeof actThreadSnapshotObjectSchema>;
+function validateThreadCursor(
+  value: { threadId: string; revision: number; cursor: string },
+  context: z.RefinementCtx,
+): void {
+  const cursorPrefix = `${value.threadId}:`;
+  const cursorRevision = value.cursor.startsWith(cursorPrefix) ? value.cursor.slice(cursorPrefix.length) : '';
+  if (!/^(0|[1-9][0-9]*)$/.test(cursorRevision) || Number(cursorRevision) > value.revision)
+    context.addIssue({ code: 'custom', path: ['cursor'], message: 'Cursor must belong to this thread and revision.' });
+}
+
+function validateSnapshotCorrelation(value: Snapshot, context: z.RefinementCtx): void {
+  validateThreadCursor(value, context);
+  const operationIds = new Set(value.capabilities.map((capability) => capability.operationId));
+  for (const [key, operation] of Object.entries(value.operations)) {
+    if (key !== operation.id)
+      context.addIssue({ code: 'custom', path: ['operations', key, 'id'], message: 'Operation key must match id.' });
+    if (!operationIds.has(operation.operationId))
+      context.addIssue({
+        code: 'custom',
+        path: ['operations', key, 'operationId'],
+        message: 'Operation capability must belong to this thread.',
+      });
+  }
+  for (const [key, request] of Object.entries(value.requests)) {
+    if (key !== request.id)
+      context.addIssue({ code: 'custom', path: ['requests', key, 'id'], message: 'Request key must match id.' });
+    if (!Object.hasOwn(value.operations, request.actionId))
+      context.addIssue({
+        code: 'custom',
+        path: ['requests', key, 'actionId'],
+        message: 'Request operation must belong to this thread.',
+      });
+    if (request.revision > value.revision)
+      context.addIssue({
+        code: 'custom',
+        path: ['requests', key, 'revision'],
+        message: 'Request revision cannot exceed the thread revision.',
+      });
+  }
+}
+
+export const actThreadSnapshotSchema = actThreadSnapshotObjectSchema.superRefine(validateSnapshotCorrelation);
+export const actThreadPageSchema = actThreadSnapshotObjectSchema
+  .extend({
+    events: z.array(threadEventSchema).max(100),
+    hasMore: z.boolean(),
+  })
+  .superRefine((value, context) => {
+    validateSnapshotCorrelation(value, context);
+    const eventIds = new Set<string>();
+    const eventRevisions = new Set<number>();
+    let priorRevision = 0;
+    for (const [index, event] of value.events.entries()) {
+      if (event.threadId !== value.threadId)
+        context.addIssue({
+          code: 'custom',
+          path: ['events', index, 'threadId'],
+          message: 'Event must belong to this thread.',
+        });
+      const expectedSenderAiId =
+        event.sender === 'acting_ai' ? value.actingAiId : event.sender === 'target_ai' ? value.targetAiId : null;
+      if (event.senderAiId !== expectedSenderAiId)
+        context.addIssue({
+          code: 'custom',
+          path: ['events', index, 'senderAiId'],
+          message: 'Event sender identity does not match its authority.',
+        });
+      if (!(THREAD_EVENT_SENDER_TYPES[event.sender] as readonly string[]).includes(event.payload.type))
+        context.addIssue({
+          code: 'custom',
+          path: ['events', index, 'payload', 'type'],
+          message: 'Event type is forbidden for its sender authority.',
+        });
+      if (event.revision < 1 || event.revision > value.revision || event.revision <= priorRevision)
+        context.addIssue({
+          code: 'custom',
+          path: ['events', index, 'revision'],
+          message: 'Events must be ordered within the thread revision.',
+        });
+      priorRevision = event.revision;
+      if (eventIds.has(event.id))
+        context.addIssue({ code: 'custom', path: ['events', index, 'id'], message: 'Event ids must be unique.' });
+      if (eventRevisions.has(event.revision))
+        context.addIssue({
+          code: 'custom',
+          path: ['events', index, 'revision'],
+          message: 'Event revisions must be unique.',
+        });
+      eventIds.add(event.id);
+      eventRevisions.add(event.revision);
+
+      const requestId = event.payload.type === 'payment_request' ? event.payload.paymentRequestId : event.id;
+      const request = value.requests[requestId];
+      if (
+        request &&
+        (request.kind !== event.payload.type ||
+          request.revision !== event.revision ||
+          request.digest !== event.requestDigest)
+      )
+        context.addIssue({
+          code: 'custom',
+          path: ['requests', requestId],
+          message: 'Request must correlate to its immutable event.',
+        });
+    }
+  });
+export const actThreadSummarySchema = actThreadSnapshotObjectSchema
+  .omit({
+    capabilities: true,
+    operations: true,
+    requests: true,
+    deliveries: true,
+  })
+  .superRefine(validateThreadCursor);
+export const threadMessageAcceptedSchema = z
+  .object({
+    accepted: z.literal(true),
+    eventId: id,
+    revision,
+    cursor,
+    delivery: z.literal('accepted'),
+  })
+  .strict();
+export const threadListResponseSchema = z
+  .object({ threads: z.array(actThreadSummarySchema).max(100), nextCursor: id.nullable() })
+  .strict();
+export const threadArchiveResponseSchema = z
+  .object({ threadId: id, archived: z.literal(true), revision, attention: z.boolean() })
+  .strict();
+
+const authenticationBase = z
+  .object({
+    authenticationId: id,
+    targetAiId: id,
+    threadId: id.optional(),
+    revision,
+    expiresAt: z.iso.datetime(),
+    authorizationUrl: hostedUrl.optional(),
+  })
+  .strict();
+export const threadAuthenticationResponseSchema = z.discriminatedUnion('status', [
+  authenticationBase.extend({ status: z.enum(['awaiting_consent', 'authorizing', 'exchanging', 'expired']) }),
+  authenticationBase.extend({ status: z.literal('connected'), accountId: id, grantId: id }),
+  authenticationBase.extend({
+    status: z.enum(['denied', 'failed']),
+    reason: z.enum(['provider_denied', 'provider_failed', 'exchange_uncertain']).optional(),
+  }),
+]);
+
+const paymentBase = z
+  .object({
+    paymentId: id,
+    paymentRequestId: id,
+    threadId: id,
+    revision,
+    method: paymentRailSchema,
+    paymentMethodId: id,
+    amountMinor: paymentRequestSchema.shape.amountMinor,
+    currency: paymentRequestSchema.shape.currency,
+    payeeId: id,
+    expiresAt: z.iso.datetime(),
+    refundAmountMinor: z
+      .string()
+      .regex(/^(0|[1-9][0-9]{0,17})$/)
+      .optional(),
+    pendingRefundAmountMinor: paymentRequestSchema.shape.amountMinor.optional(),
+    failedRefundAmountMinor: paymentRequestSchema.shape.amountMinor.optional(),
+    disputeAmountMinor: paymentRequestSchema.shape.amountMinor.optional(),
+    disputeStatus: z
+      .enum([
+        'warning_needs_response',
+        'warning_under_review',
+        'warning_closed',
+        'needs_response',
+        'under_review',
+        'won',
+        'lost',
+      ])
+      .optional(),
+  })
+  .strict();
+// A checkout link cannot masquerade as a receipt. Only settled/refunded states
+// carry verified capture evidence; refund is deliberately not another success.
+export const threadPaymentResponseSchema = z.discriminatedUnion('status', [
+  paymentBase.extend({
+    status: z.literal('prepared'),
+    reconciliationRequired: z.literal(false),
+    paymentUrl: hostedUrl,
+  }),
+  paymentBase.extend({
+    status: z.enum(['dispatching', 'uncertain', 'pending']),
+    reconciliationRequired: z.literal(true),
+    paymentUrl: hostedUrl,
+  }),
+  paymentBase.extend({
+    status: z.literal('settled'),
+    reconciliationRequired: z.literal(false),
+    receiptId: id,
+    receiptRelay: z.enum(['pending', 'delivered', 'unknown', 'withheld']),
+  }),
+  paymentBase.extend({
+    status: z.enum(['partially_refunded', 'reversal_pending', 'reversal_failed', 'disputed']),
+    reconciliationRequired: z.literal(true),
+    receiptId: id,
+    receiptRelay: z.enum(['pending', 'delivered', 'unknown', 'withheld']),
+  }),
+  paymentBase.extend({
+    status: z.literal('refunded'),
+    reconciliationRequired: z.literal(false),
+    receiptId: id,
+    receiptRelay: z.enum(['pending', 'delivered', 'unknown', 'withheld']),
+  }),
+  paymentBase.extend({ status: z.enum(['failed', 'voided']), reconciliationRequired: z.literal(false) }),
+]);
+
+export const ACT_THREAD_RESPONSES = {
+  start_thread: actThreadSnapshotSchema,
+  send_message: threadMessageAcceptedSchema,
+  get_thread: actThreadPageSchema,
+  list_threads: threadListResponseSchema,
+  archive_thread: threadArchiveResponseSchema,
+  authenticate: threadAuthenticationResponseSchema,
+  pay: threadPaymentResponseSchema,
+} as const satisfies Record<ActThreadOperation, z.ZodType>;

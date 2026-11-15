@@ -1,0 +1,173 @@
+import { z } from 'zod';
+
+export const THREAD_TOOL_SELECTION_REQUIRED = 'THREAD_TOOL_SELECTION_REQUIRED' as const;
+
+const id = z
+  .string()
+  .min(1)
+  .max(200)
+  .regex(/^[A-Za-z0-9][A-Za-z0-9_.:-]*$/);
+const fieldName = z.string().min(1).max(200);
+const primitive = z.union([z.string().max(2_000), z.number(), z.boolean(), z.null()]);
+const schemaType = z.enum(['object', 'array', 'string', 'number', 'integer', 'boolean', 'null']);
+const count = z.number().int().nonnegative().max(1_000_000);
+const scalarKeywords: Record<string, z.ZodType> = {
+  type: z.union([schemaType, z.array(schemaType).min(1).max(7)]),
+  required: z.array(fieldName).max(100),
+  enum: z.array(primitive).min(1).max(100),
+  const: primitive,
+  minimum: z.number(),
+  maximum: z.number(),
+  exclusiveMinimum: z.number(),
+  exclusiveMaximum: z.number(),
+  multipleOf: z.number().positive(),
+  minLength: count,
+  maxLength: count,
+  minItems: count,
+  maxItems: count,
+  minProperties: count,
+  maxProperties: count,
+  uniqueItems: z.boolean(),
+  pattern: z.string().max(1_000),
+  format: z.enum([
+    'date-time',
+    'date',
+    'time',
+    'duration',
+    'email',
+    'hostname',
+    'ipv4',
+    'ipv6',
+    'uuid',
+    'uri',
+    'uri-reference',
+  ]),
+  // Only local definitions can describe a form. Never expose or fetch a provider URL.
+  $ref: z
+    .string()
+    .max(500)
+    .regex(/^#\/(?:\$defs|definitions)(?:\/[^\s/]{1,200}){1,8}$/),
+};
+const singleSchemaKeywords = new Set(['items', 'additionalProperties', 'not', 'if', 'then', 'else', 'contains']);
+const schemaMapKeywords = new Set(['properties', '$defs', 'definitions']);
+const schemaListKeywords = new Set(['allOf', 'anyOf', 'oneOf', 'prefixItems']);
+
+/** Public form metadata, not the authoritative provider validator. Defaults,
+ * examples, descriptions, extensions and diagnostics deliberately never cross
+ * this boundary. Execution still validates against the exact pinned catalog. */
+function formSchema(raw: unknown, sanitize: boolean): Record<string, unknown> {
+  let nodes = 0;
+  const seen = new WeakSet<object>();
+  function visit(value: unknown, depth: number): Record<string, unknown> | boolean {
+    if (++nodes > 2_000 || depth > 12) throw new Error('Tool input form exceeds its bounds.');
+    if (typeof value === 'boolean') return value;
+    if (!value || typeof value !== 'object' || Array.isArray(value) || seen.has(value))
+      throw new Error('Invalid tool input form.');
+    seen.add(value);
+    try {
+      const entries = Object.entries(value);
+      if (entries.length > 100) throw new Error('Tool input form exceeds its bounds.');
+      const projected: [string, unknown][] = [];
+      for (const [key, item] of entries) {
+        const scalar = Object.hasOwn(scalarKeywords, key) ? scalarKeywords[key] : undefined;
+        if (scalar) {
+          const parsed = scalar.safeParse(item);
+          if (sanitize && key === 'format' && !parsed.success) continue;
+          if (!parsed.success) throw new Error('Invalid tool input form.');
+          projected.push([key, parsed.data]);
+        } else if (singleSchemaKeywords.has(key)) {
+          projected.push([key, visit(item, depth + 1)]);
+        } else if (schemaMapKeywords.has(key)) {
+          if (!item || typeof item !== 'object' || Array.isArray(item)) throw new Error('Invalid tool input form.');
+          const fields = Object.entries(item);
+          if (fields.length > 100) throw new Error('Tool input form exceeds its bounds.');
+          projected.push([
+            key,
+            Object.fromEntries(
+              fields.map(([name, child]) => {
+                if (!fieldName.safeParse(name).success) throw new Error('Invalid tool input form.');
+                return [name, visit(child, depth + 1)];
+              }),
+            ),
+          ]);
+        } else if (schemaListKeywords.has(key)) {
+          if (!Array.isArray(item) || !item.length || item.length > 20) throw new Error('Invalid tool input form.');
+          projected.push([key, item.map((child) => visit(child, depth + 1))]);
+        } else if (!sanitize) {
+          throw new Error('Invalid tool input form.');
+        }
+      }
+      return Object.fromEntries(projected);
+    } finally {
+      seen.delete(value);
+    }
+  }
+  const output = visit(raw, 0);
+  if (typeof output === 'boolean' || output.type !== 'object')
+    throw new Error('Tool input form must describe an object.');
+  if (new TextEncoder().encode(JSON.stringify(output)).length > 65_536)
+    throw new Error('Tool input form exceeds its bounds.');
+  return output;
+}
+
+export const threadToolSelectionInputSchema = z.record(z.string(), z.json()).refine((value) => {
+  try {
+    formSchema(value, false);
+    return true;
+  } catch {
+    return false;
+  }
+}, 'Invalid bounded tool input form.');
+
+export const threadToolSelectionRequiredErrorSchema = z
+  .object({
+    code: z.literal(THREAD_TOOL_SELECTION_REQUIRED),
+    targetAgent: id,
+    agent: id,
+    expiresAt: z.iso.datetime().max(40),
+    capabilities: z
+      .array(
+        z
+          .object({
+            capability: z.string().regex(/^(?:public-mcp|public-openapi):[a-f0-9]{64}$/),
+            title: z.string().min(1).max(500),
+            inputSchema: threadToolSelectionInputSchema,
+            effect: z.literal('external_effect'),
+            pricing: z.literal('unknown'),
+            requiresConfirmation: z.literal(true),
+          })
+          .strict(),
+      )
+      .min(1)
+      .max(100),
+  })
+  .strict()
+  .superRefine((value, context) => {
+    if (new Set(value.capabilities.map((item) => item.capability)).size !== value.capabilities.length)
+      context.addIssue({ code: 'custom', path: ['capabilities'], message: 'Capabilities must be unique.' });
+    if (new TextEncoder().encode(JSON.stringify(value)).length > 1_048_576)
+      context.addIssue({ code: 'custom', message: 'Tool selection exceeds its bounds.' });
+  });
+export type ThreadToolSelectionRequiredError = z.infer<typeof threadToolSelectionRequiredErrorSchema>;
+
+export function projectThreadToolSelectionRequired(input: {
+  targetAgent: string;
+  agent: string;
+  expiresAt: string;
+  capabilities: readonly { operationId: string; title: string; inputSchema: unknown }[];
+}): ThreadToolSelectionRequiredError {
+  return threadToolSelectionRequiredErrorSchema.parse({
+    code: THREAD_TOOL_SELECTION_REQUIRED,
+    targetAgent: input.targetAgent,
+    agent: input.agent,
+    expiresAt: input.expiresAt,
+    capabilities: input.capabilities.map((item) => ({
+      capability: item.operationId,
+      title: item.title,
+      inputSchema: formSchema(item.inputSchema, true),
+      effect: 'external_effect',
+      pricing: 'unknown',
+      requiresConfirmation: true,
+    })),
+  });
+}

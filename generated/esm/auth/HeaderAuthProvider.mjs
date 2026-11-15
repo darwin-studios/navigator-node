@@ -9,7 +9,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 import * as core from "../core/index.mjs";
-import * as errors from "../errors/index.mjs";
 const PARAM_KEY = "apiKey";
 const ENV_HEADER_KEY = "DARWIN_API_KEY";
 const HEADER_NAME = "x-api-key";
@@ -19,16 +18,14 @@ export class HeaderAuthProvider {
     }
     static canCreate(options) {
         var _a;
-        return (options === null || options === void 0 ? void 0 : options[PARAM_KEY]) != null || ((_a = process.env) === null || _a === void 0 ? void 0 : _a[ENV_HEADER_KEY]) != null;
+        return ((options === null || options === void 0 ? void 0 : options[PARAM_KEY]) != null || (typeof process !== "undefined" && ((_a = process.env) === null || _a === void 0 ? void 0 : _a[ENV_HEADER_KEY]) != null));
     }
     getAuthRequest() {
         return __awaiter(this, arguments, void 0, function* ({ endpointMetadata, } = {}) {
             var _a, _b;
-            const headerValue = (_a = (yield core.Supplier.get(this.options[PARAM_KEY]))) !== null && _a !== void 0 ? _a : (_b = process.env) === null || _b === void 0 ? void 0 : _b[ENV_HEADER_KEY];
+            const headerValue = (_a = (yield core.Supplier.get(this.options[PARAM_KEY]))) !== null && _a !== void 0 ? _a : (typeof process !== "undefined" ? (_b = process.env) === null || _b === void 0 ? void 0 : _b[ENV_HEADER_KEY] : undefined);
             if (headerValue == null) {
-                throw new errors.DarwinError({
-                    message: HeaderAuthProvider.AUTH_CONFIG_ERROR_MESSAGE,
-                });
+                return { headers: {} };
             }
             return {
                 headers: { [HEADER_NAME]: headerValue },

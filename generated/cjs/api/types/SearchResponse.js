@@ -4,8 +4,12 @@ Object.defineProperty(exports, '__esModule', { value: true });
 exports.SearchResponse = void 0;
 var SearchResponse;
 (function (SearchResponse) {
-  SearchResponse.DegradedReason = {
-    CanonicalCache: 'CANONICAL_CACHE',
-    PostgresCompatibility: 'POSTGRES_COMPATIBILITY',
+  SearchResponse.ContractVersion = {
+    SearchPublicV2: 'search-public-v2',
+  };
+  SearchResponse.Outcome = {
+    Match: 'MATCH',
+    Clarify: 'CLARIFY',
+    NoEligibleSupply: 'NO_ELIGIBLE_SUPPLY',
   };
 })(SearchResponse || (exports.SearchResponse = SearchResponse = {}));

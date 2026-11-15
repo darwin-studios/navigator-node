@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "version": "0.5.0",
+  "sourceRepository": "darwin-studios/darwin",
+  "sourceRevision": "90d36cb33ddf5255b2797f81ec6c21b3a78c0af9",
+  "contract": {
+    "path": "scripts/sdk/fern/openapi-sdk.json",
+    "sha256": "d6770942ada104ef302c5909ec834836fd4fd256ca3fe46779fe25a3f6f8e4a3"
+  }
+}

@@ -3,5 +3,5 @@
 Object.defineProperty(exports, '__esModule', { value: true });
 exports.DarwinEnvironment = void 0;
 exports.DarwinEnvironment = {
-  Default: 'https://api.darwin.so/api/v2',
+  Default: 'https://api.darwin.so/api',
 };

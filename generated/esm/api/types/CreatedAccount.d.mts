@@ -1,6 +1,6 @@
 export interface CreatedAccount {
     id: string;
-    type: CreatedAccount.Type;
+    type?: CreatedAccount.Type | undefined;
     name: string;
     status: CreatedAccount.Status;
     createdAt: string;

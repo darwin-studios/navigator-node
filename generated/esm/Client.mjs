@@ -6524,13 +6524,7 @@ export class DarwinClient {
                 : _e.timeoutInSeconds) !== null && _f !== void 0
             ? _f
             : 60) * 1000,
-        maxRetries:
-          (_g = requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.maxRetries) !== null &&
-          _g !== void 0
-            ? _g
-            : (_h = this._options) === null || _h === void 0
-              ? void 0
-              : _h.maxRetries,
+        maxRetries: 0,
         abortSignal: requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.abortSignal,
         fetchFn: (_j = this._options) === null || _j === void 0 ? void 0 : _j.fetch,
         logging: this._options.logging,
@@ -6632,13 +6626,7 @@ export class DarwinClient {
                 : _e.timeoutInSeconds) !== null && _f !== void 0
             ? _f
             : 60) * 1000,
-        maxRetries:
-          (_g = requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.maxRetries) !== null &&
-          _g !== void 0
-            ? _g
-            : (_h = this._options) === null || _h === void 0
-              ? void 0
-              : _h.maxRetries,
+        maxRetries: 0,
         abortSignal: requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.abortSignal,
         fetchFn: (_j = this._options) === null || _j === void 0 ? void 0 : _j.fetch,
         logging: this._options.logging,
@@ -6751,13 +6739,7 @@ export class DarwinClient {
                 : _e.timeoutInSeconds) !== null && _f !== void 0
             ? _f
             : 60) * 1000,
-        maxRetries:
-          (_g = requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.maxRetries) !== null &&
-          _g !== void 0
-            ? _g
-            : (_h = this._options) === null || _h === void 0
-              ? void 0
-              : _h.maxRetries,
+        maxRetries: 0,
         abortSignal: requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.abortSignal,
         fetchFn: (_j = this._options) === null || _j === void 0 ? void 0 : _j.fetch,
         logging: this._options.logging,

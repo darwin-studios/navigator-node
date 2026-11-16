@@ -1,1 +1,1 @@
-export * from '@darwinso/sdk/openai';
+export * from './generated/esm/openai/index.mjs';

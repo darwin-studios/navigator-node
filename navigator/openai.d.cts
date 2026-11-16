@@ -1,1 +1,1 @@
-export * from '@darwinso/sdk/openai';
+export * from './generated/cjs/openai/index.js';

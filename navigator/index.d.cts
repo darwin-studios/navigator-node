@@ -1,7 +1,7 @@
-export * from '@darwinso/sdk';
+export * from './generated/cjs/index.js';
 export {
   DarwinClient as NavigatorClient,
   DarwinEnvironment as NavigatorEnvironment,
   DarwinError as NavigatorError,
   DarwinTimeoutError as NavigatorTimeoutError,
-} from '@darwinso/sdk';
+} from './generated/cjs/index.js';

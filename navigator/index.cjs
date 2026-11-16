@@ -1,4 +1,4 @@
-const sdk = require('@darwinso/sdk');
+const sdk = require('./generated/cjs/index.js');
 module.exports = {
   ...sdk,
   NavigatorClient: sdk.DarwinClient,

@@ -45,3 +45,18 @@ for (const [format, Client] of [
     for (const call of calls) assert.equal(call.headers.get('x-api-key'), 'fixture-key');
   });
 }
+
+for (const [format, Client] of [['ESM', EsmClient], ['CJS', CjsClient]]) {
+  for (const name of ['run', 'build', 'manage']) for (const failure of ['503', 'lost reply']) {
+    test(`${format} ${name} ${failure} does not retry an uncertain write, including explicit retry overrides`, async () => {
+      let calls = 0;
+      const client = new Client({
+        apiKey: 'fixture-only', maxRetries: 3,
+        fetch: async () => { calls++; if (failure === 'lost reply') throw new Error('lost reply'); return Response.json({code:'UNAVAILABLE',message:'uncertain'}, {status:503}); },
+      });
+      const body = name === 'run' ? {type:'turn',clientMessageId:'same-id',message:'Review'} : {action:'list_agents'};
+      await assert.rejects(() => client[name]({body, 'Idempotency-Key':'same-key'}, {maxRetries:3}));
+      assert.equal(calls,1);
+    });
+  }
+}

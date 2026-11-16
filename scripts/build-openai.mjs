@@ -66,7 +66,7 @@ for (const name of [
       if (declaration) content = content.replace(/export \{ createAgentView, renderAgentView \} from ['"](?:@darwinui\/core|\.\/agent-view\.js)['"];?\n/g, '');
       content = content.replace(/\.\/((?:composer-runtime|agent-component-library))(?:\.js)?(?=['"])/g, `./$1.${runtimeExtension}`);
       if (name === 'composer' && !declaration) {
-        const bundled = await build({ absWorkingDir: monorepoRoot, entryPoints: [root === monorepoRoot ? resolve(root, 'packages/agent-contracts/src/composer.ts') : resolve(packageRoot, 'src/openai/canonical/composer.ts')], bundle: true, write: false, platform: 'node', target: 'node20', format: format === 'esm' ? 'esm' : 'cjs', external: ['zod'], logLevel: 'silent' });
+        const bundled = await build({ absWorkingDir: root, entryPoints: [root === monorepoRoot ? resolve(root, 'packages/agent-contracts/src/composer.ts') : resolve(packageRoot, 'src/openai/canonical/composer.ts')], bundle: true, write: false, platform: 'node', target: 'node20', format: format === 'esm' ? 'esm' : 'cjs', external: ['zod'], logLevel: 'silent' });
         content = bundled.outputFiles[0].text;
       }
       if (format === 'cjs' && !declaration)

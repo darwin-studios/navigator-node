@@ -1537,6 +1537,112 @@ export declare class DarwinClient {
   ): core.HttpResponsePromise<Darwin.ActV3ListThreadsResponse>;
   private __listActThreads;
   /**
+   * Builder: start_draft (idea, website or typed definition), import_package (base64 Darwin Agent ZIP), import_source, billing_summary, save_draft, get_draft, list_drafts, check_slug, validate_draft, export_draft, export_destination, start_test, get_job, resume_job and cancel_job. billing_summary also requires payments:read and returns the owner plan, credit-pack catalog, available credits and payment-method readiness. Test submission/resumption and release preparation require a usage payment method on file. Node execution rates still require a verified quote. Account-owned draft reads require builder:read; save and test mutations require builder:write. save_draft uses expectedRevision and Idempotency-Key. start_test pins a saved revision; resume_job executes supported TypeScript in a configured isolated local runner. export_draft returns a base64 Darwin Agent ZIP archive alongside structured metadata. Structural validation is not execution evidence. prepare_release prepares a saved revision and its release evidence. release_agent and release_operation publish existing definitions under agents:write and operations:write respectively. Publication is part of Build; a prepared package alone is not a deployed agent. Legacy agent-definition actions remain compatible under their existing scopes.
+   *
+   * @param {Darwin.BuildRequest} request
+   * @param {DarwinClient.RequestOptions} requestOptions - Request-specific configuration.
+   *
+   * @throws {@link Darwin.BadRequestError}
+   * @throws {@link Darwin.UnauthorizedError}
+   * @throws {@link Darwin.ForbiddenError}
+   * @throws {@link Darwin.NotFoundError}
+   * @throws {@link Darwin.ConflictError}
+   * @throws {@link Darwin.ServiceUnavailableError}
+   * @throws {@link errors.DarwinError}
+   * @throws {@link errors.DarwinTimeoutError}
+   *
+   * @example
+   *     await client.build({
+   *         "Idempotency-Key": "Idempotency-Key",
+   *         body: {
+   *             action: "list_drafts"
+   *         }
+   *     })
+   */
+  build(
+    request: Darwin.BuildRequest,
+    requestOptions?: DarwinClient.RequestOptions,
+  ): core.HttpResponsePromise<Record<string, unknown>>;
+  private __build;
+  /**
+   * Read and update your saved agents, revisions, prepared releases, and tests. Production deployment is not connected.
+   *
+   * @param {Darwin.ManageRequest} request
+   * @param {DarwinClient.RequestOptions} requestOptions - Request-specific configuration.
+   *
+   * @throws {@link Darwin.BadRequestError}
+   * @throws {@link Darwin.UnauthorizedError}
+   * @throws {@link Darwin.ForbiddenError}
+   * @throws {@link Darwin.NotFoundError}
+   * @throws {@link Darwin.ConflictError}
+   * @throws {@link Darwin.ServiceUnavailableError}
+   * @throws {@link errors.DarwinError}
+   * @throws {@link errors.DarwinTimeoutError}
+   *
+   * @example
+   *     await client.manage({
+   *         "Idempotency-Key": "Idempotency-Key",
+   *         body: {
+   *             action: "list_agents"
+   *         }
+   *     })
+   */
+  manage(
+    request: Darwin.ManageRequest,
+    requestOptions?: DarwinClient.RequestOptions,
+  ): core.HttpResponsePromise<Record<string, unknown>>;
+  private __manage;
+  /**
+   * Run one or multiple agents. Direct handoffs accept one to eight targets, with separate threads and per-target results. Coordinated work uses type: turn, clientMessageId and a message, with an optional sessionId; Darwin plans and coordinates execution through the existing approval-controlled runtime. A handoff receipt is not a completed task outcome.
+   *
+   * @param {Darwin.RunBody} request
+   * @param {DarwinClient.RequestOptions} requestOptions - Request-specific configuration.
+   *
+   * @throws {@link Darwin.BadRequestError}
+   * @throws {@link Darwin.UnauthorizedError}
+   * @throws {@link Darwin.ForbiddenError}
+   * @throws {@link Darwin.act.ConflictError}
+   * @throws {@link Darwin.TooManyRequestsError}
+   * @throws {@link Darwin.ServiceUnavailableError}
+   * @throws {@link errors.DarwinError}
+   * @throws {@link errors.DarwinTimeoutError}
+   *
+   * @example
+   *     await client.run({
+   *         body: {
+   *             searchId: "searchId",
+   *             message: "message"
+   *         }
+   *     })
+   */
+  run(
+    request: Darwin.RunBody,
+    requestOptions?: DarwinClient.RequestOptions,
+  ): core.HttpResponsePromise<Darwin.RunResponse>;
+  private __run;
+  /**
+   * Read an Act request and its authorized session messages, actions and pending requests. Use the actRequestId returned by Act or an Assist child step. Includes current session state by default; continue the selected session through POST /v3/act.
+   *
+   * @param {Darwin.GetRunRequestRequest} request
+   * @param {DarwinClient.RequestOptions} requestOptions - Request-specific configuration.
+   *
+   * @throws {@link Darwin.UnauthorizedError}
+   * @throws {@link Darwin.ForbiddenError}
+   * @throws {@link Darwin.TooManyRequestsError}
+   * @throws {@link errors.DarwinError}
+   * @throws {@link errors.DarwinTimeoutError}
+   *
+   * @example
+   *     await client.getRunRequest({
+   *         actRequestId: "actRequestId"
+   *     })
+   */
+  getRunRequest(
+    request: Darwin.GetRunRequestRequest,
+    requestOptions?: DarwinClient.RequestOptions,
+  ): core.HttpResponsePromise<Darwin.ActV3RequestResponse>;
+  private __getRunRequest;
+  /**
    * The server checks current session access and resource permissions on every request. Acceptance does not prove provider execution.
    *
    * @param {DarwinClient.RequestOptions} requestOptions - Request-specific configuration.
@@ -2261,7 +2367,9 @@ export declare class DarwinClient {
   ): core.HttpResponsePromise<Darwin.NavigateResponse>;
   private __liveSearch;
   /**
-   * Omit sessionId to start, or pass it to continue. This endpoint selects the action; answers and clarification can occur without dispatching work. Execution still requires authority and applicable approvals.
+   * @deprecated
+   *
+   * Compatibility alias for the coordinated turn form of POST /v3/run.
    *
    * @param {Darwin.OrchestrateRequest} request
    * @param {DarwinClient.RequestOptions} requestOptions - Request-specific configuration.
@@ -2335,7 +2443,9 @@ export declare class DarwinClient {
   ): core.HttpResponsePromise<Darwin.NavigateResponse>;
   private __updateSession;
   /**
-   * Omit sessionId to start, or pass it to continue. This endpoint selects the action; answers and clarification can occur without dispatching work. Execution still requires authority and applicable approvals.
+   * @deprecated
+   *
+   * Compatibility alias for the coordinated turn form of POST /v3/run.
    *
    * @param {Darwin.RouteRequest} request
    * @param {DarwinClient.RequestOptions} requestOptions - Request-specific configuration.
@@ -2361,7 +2471,9 @@ export declare class DarwinClient {
   ): core.HttpResponsePromise<Darwin.NavigateResponse>;
   private __route;
   /**
-   * Omit sessionId to start, or pass it to continue. This endpoint selects the action; answers and clarification can occur without dispatching work. Execution still requires authority and applicable approvals.
+   * @deprecated
+   *
+   * Compatibility alias for the coordinated turn form of POST /v3/run.
    *
    * @param {Darwin.ExecuteRequest} request
    * @param {DarwinClient.RequestOptions} requestOptions - Request-specific configuration.

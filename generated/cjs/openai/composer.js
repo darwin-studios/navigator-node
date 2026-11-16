@@ -18,7 +18,7 @@ var __copyProps = (to, from, except, desc) => {
   return to;
 };
 var __toCommonJS = (mod) => __copyProps(__defProp({}, '__esModule', { value: true }), mod);
-// x9240kld1qq0y8vbkm3_j88h0000gn/T/darwin-public-sync-Eo9foB/darwin-node/src/openai/canonical/composer.ts
+// private/tmp/navigator-public-node-20261116/src/openai/canonical/composer.ts
 var composer_exports = {};
 __export(composer_exports, {
   EXPERIENCE_CATALOG_VERSION: () => EXPERIENCE_CATALOG_VERSION,
@@ -55,7 +55,7 @@ __export(composer_exports, {
   withoutComposerAudience: () => withoutComposerAudience,
 });
 module.exports = __toCommonJS(composer_exports);
-// x9240kld1qq0y8vbkm3_j88h0000gn/T/darwin-public-sync-Eo9foB/darwin-node/src/openai/canonical/agent-view.ts
+// private/tmp/navigator-public-node-20261116/src/openai/canonical/agent-view.ts
 var import_zod = require('zod');
 var agentComponentSchema = import_zod.z.object({
   id: import_zod.z.string().min(1),
@@ -95,9 +95,9 @@ function renderAgentView(view, format = 'json') {
     return [...parsed.components.map((c) => c.text ?? JSON.stringify(c.data)), ...parsed.incomplete].join('\n');
   return JSON.stringify(parsed, null, 2);
 }
-// x9240kld1qq0y8vbkm3_j88h0000gn/T/darwin-public-sync-Eo9foB/darwin-node/src/openai/canonical/composer.ts
+// private/tmp/navigator-public-node-20261116/src/openai/canonical/composer.ts
 var import_zod6 = require('zod');
-// x9240kld1qq0y8vbkm3_j88h0000gn/T/darwin-public-sync-Eo9foB/darwin-node/src/openai/canonical/agent-appearance.ts
+// private/tmp/navigator-public-node-20261116/src/openai/canonical/agent-appearance.ts
 var import_zod2 = require('zod');
 var hex = import_zod2.z.string().regex(/^#[0-9a-fA-F]{6}$/, 'Use a six-digit hex color, such as #0071E3.');
 var agentBrandSchema = import_zod2.z
@@ -124,7 +124,7 @@ var agentLoadingSchema = import_zod2.z
     poster: poster.optional(),
   })
   .strict();
-// x9240kld1qq0y8vbkm3_j88h0000gn/T/darwin-public-sync-Eo9foB/darwin-node/src/openai/canonical/agent-component-library.ts
+// private/tmp/navigator-public-node-20261116/src/openai/canonical/agent-component-library.ts
 var import_zod3 = require('zod');
 var agentComponentLibrarySchema = import_zod3.z
   .object({
@@ -192,7 +192,7 @@ var agentComponentLibrarySchema = import_zod3.z
     if (new Set(library.components.map((component) => component.export)).size !== library.components.length)
       context.addIssue({ code: 'custom', message: 'Component export names must be unique.' });
   });
-// x9240kld1qq0y8vbkm3_j88h0000gn/T/darwin-public-sync-Eo9foB/darwin-node/src/openai/canonical/composer-runtime.ts
+// private/tmp/navigator-public-node-20261116/src/openai/canonical/composer-runtime.ts
 var import_zod4 = require('zod');
 var identifier = import_zod4.z.string().regex(/^[a-z][a-z0-9_-]{0,63}$/);
 var composerRuntimeComponentSchema = import_zod4.z
@@ -279,7 +279,7 @@ var composerRuntimeRegionSchema = import_zod4.z
     outputTokens: import_zod4.z.number().int().nonnegative().optional(),
   })
   .strict();
-// x9240kld1qq0y8vbkm3_j88h0000gn/T/darwin-public-sync-Eo9foB/darwin-node/src/openai/canonical/operation-guidance.ts
+// private/tmp/navigator-public-node-20261116/src/openai/canonical/operation-guidance.ts
 var import_zod5 = require('zod');
 var instruction = import_zod5.z.string().max(1200);
 var operationGuidanceSchema = import_zod5.z
@@ -292,7 +292,7 @@ var operationGuidanceSchema = import_zod5.z
     recovery: instruction.default(''),
   })
   .strict();
-// x9240kld1qq0y8vbkm3_j88h0000gn/T/darwin-public-sync-Eo9foB/darwin-node/src/openai/canonical/composer.ts
+// private/tmp/navigator-public-node-20261116/src/openai/canonical/composer.ts
 var id = import_zod6.z
   .string()
   .min(1)

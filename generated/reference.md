@@ -4049,6 +4049,275 @@ await client.listActThreads();
 </dl>
 </details>
 
+<details><summary><code>client.<a href="/src/Client.ts">build</a>({ ...params }) -> Record&lt;string, unknown&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Builder: start_draft (idea, website or typed definition), import_package (base64 Darwin Agent ZIP), import_source, billing_summary, save_draft, get_draft, list_drafts, check_slug, validate_draft, export_draft, export_destination, start_test, get_job, resume_job and cancel_job. billing_summary also requires payments:read and returns the owner plan, credit-pack catalog, available credits and payment-method readiness. Test submission/resumption and release preparation require a usage payment method on file. Node execution rates still require a verified quote. Account-owned draft reads require builder:read; save and test mutations require builder:write. save_draft uses expectedRevision and Idempotency-Key. start_test pins a saved revision; resume_job executes supported TypeScript in a configured isolated local runner. export_draft returns a base64 Darwin Agent ZIP archive alongside structured metadata. Structural validation is not execution evidence. prepare_release prepares a saved revision and its release evidence. release_agent and release_operation publish existing definitions under agents:write and operations:write respectively. Publication is part of Build; a prepared package alone is not a deployed agent. Legacy agent-definition actions remain compatible under their existing scopes.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```typescript
+await client.build({
+    "Idempotency-Key": "Idempotency-Key",
+    body: {
+        action: "list_drafts"
+    }
+});
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `Darwin.BuildRequest`
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**requestOptions:** `DarwinClient.RequestOptions`
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.<a href="/src/Client.ts">manage</a>({ ...params }) -> Record&lt;string, unknown&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Read and update your saved agents, revisions, prepared releases, and tests. Production deployment is not connected.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```typescript
+await client.manage({
+    "Idempotency-Key": "Idempotency-Key",
+    body: {
+        action: "list_agents"
+    }
+});
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `Darwin.ManageRequest`
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**requestOptions:** `DarwinClient.RequestOptions`
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.<a href="/src/Client.ts">run</a>({ ...params }) -> Darwin.RunResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Run one or multiple agents. Direct handoffs accept one to eight targets, with separate threads and per-target results. Coordinated work uses type: turn, clientMessageId and a message, with an optional sessionId; Darwin plans and coordinates execution through the existing approval-controlled runtime. A handoff receipt is not a completed task outcome.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```typescript
+await client.run({
+    body: {
+        searchId: "searchId",
+        message: "message"
+    }
+});
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `Darwin.RunBody`
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**requestOptions:** `DarwinClient.RequestOptions`
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.<a href="/src/Client.ts">getRunRequest</a>({ ...params }) -> Darwin.ActV3RequestResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Read an Act request and its authorized session messages, actions and pending requests. Use the actRequestId returned by Act or an Assist child step. Includes current session state by default; continue the selected session through POST /v3/act.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```typescript
+await client.getRunRequest({
+    actRequestId: "actRequestId"
+});
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `Darwin.GetRunRequestRequest`
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**requestOptions:** `DarwinClient.RequestOptions`
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
 <details><summary><code>client.<a href="/src/Client.ts">listContext</a>() -> Record&lt;string, unknown&gt;</code></summary>
 <dl>
 <dd>
@@ -5896,7 +6165,7 @@ await client.liveSearch({
 <dl>
 <dd>
 
-Omit sessionId to start, or pass it to continue. This endpoint selects the action; answers and clarification can occur without dispatching work. Execution still requires authority and applicable approvals.
+Compatibility alias for the coordinated turn form of POST /v3/run.
 </dd>
 </dl>
 </dd>
@@ -6093,7 +6362,7 @@ await client.updateSession({
 <dl>
 <dd>
 
-Omit sessionId to start, or pass it to continue. This endpoint selects the action; answers and clarification can occur without dispatching work. Execution still requires authority and applicable approvals.
+Compatibility alias for the coordinated turn form of POST /v3/run.
 </dd>
 </dl>
 </dd>
@@ -6160,7 +6429,7 @@ await client.route({
 <dl>
 <dd>
 
-Omit sessionId to start, or pass it to continue. This endpoint selects the action; answers and clarification can occur without dispatching work. Execution still requires authority and applicable approvals.
+Compatibility alias for the coordinated turn form of POST /v3/run.
 </dd>
 </dl>
 </dd>

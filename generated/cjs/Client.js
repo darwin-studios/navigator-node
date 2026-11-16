@@ -6699,6 +6699,458 @@ class DarwinClient {
     });
   }
   /**
+   * Builder: start_draft (idea, website or typed definition), import_package (base64 Darwin Agent ZIP), import_source, billing_summary, save_draft, get_draft, list_drafts, check_slug, validate_draft, export_draft, export_destination, start_test, get_job, resume_job and cancel_job. billing_summary also requires payments:read and returns the owner plan, credit-pack catalog, available credits and payment-method readiness. Test submission/resumption and release preparation require a usage payment method on file. Node execution rates still require a verified quote. Account-owned draft reads require builder:read; save and test mutations require builder:write. save_draft uses expectedRevision and Idempotency-Key. start_test pins a saved revision; resume_job executes supported TypeScript in a configured isolated local runner. export_draft returns a base64 Darwin Agent ZIP archive alongside structured metadata. Structural validation is not execution evidence. prepare_release prepares a saved revision and its release evidence. release_agent and release_operation publish existing definitions under agents:write and operations:write respectively. Publication is part of Build; a prepared package alone is not a deployed agent. Legacy agent-definition actions remain compatible under their existing scopes.
+   *
+   * @param {Darwin.BuildRequest} request
+   * @param {DarwinClient.RequestOptions} requestOptions - Request-specific configuration.
+   *
+   * @throws {@link Darwin.BadRequestError}
+   * @throws {@link Darwin.UnauthorizedError}
+   * @throws {@link Darwin.ForbiddenError}
+   * @throws {@link Darwin.NotFoundError}
+   * @throws {@link Darwin.ConflictError}
+   * @throws {@link Darwin.ServiceUnavailableError}
+   * @throws {@link errors.DarwinError}
+   * @throws {@link errors.DarwinTimeoutError}
+   *
+   * @example
+   *     await client.build({
+   *         "Idempotency-Key": "Idempotency-Key",
+   *         body: {
+   *             action: "list_drafts"
+   *         }
+   *     })
+   */
+  build(request, requestOptions) {
+    return core.HttpResponsePromise.fromPromise(this.__build(request, requestOptions));
+  }
+  __build(request, requestOptions) {
+    return __awaiter(this, void 0, void 0, function* () {
+      var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+      const { 'Idempotency-Key': idempotencyKey, body: _body } = request;
+      const _authRequest = yield this._options.authProvider.getAuthRequest();
+      const _headers = (0, headers_js_1.mergeHeaders)(
+        _authRequest.headers,
+        (_a = this._options) === null || _a === void 0 ? void 0 : _a.headers,
+        (0, headers_js_1.mergeOnlyDefinedHeaders)({ 'Idempotency-Key': idempotencyKey }),
+        requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.headers,
+      );
+      const _response = yield core.fetcher({
+        url: core.url.join(
+          (_c =
+            (_b = yield core.Supplier.get(this._options.baseUrl)) !== null && _b !== void 0
+              ? _b
+              : yield core.Supplier.get(this._options.environment)) !== null && _c !== void 0
+            ? _c
+            : environments.DarwinEnvironment.Default,
+          'v3/build',
+        ),
+        method: 'POST',
+        headers: _headers,
+        contentType: 'application/json',
+        queryString: core.url
+          .queryBuilder()
+          .mergeAdditional(requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.queryParams)
+          .build(),
+        requestType: 'json',
+        body: (0, requestBody_js_1.mergeAdditionalBodyParameters)(
+          _body,
+          requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.additionalBodyParameters,
+        ),
+        timeoutMs:
+          ((_f =
+            (_d = requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.timeoutInSeconds) !==
+              null && _d !== void 0
+              ? _d
+              : (_e = this._options) === null || _e === void 0
+                ? void 0
+                : _e.timeoutInSeconds) !== null && _f !== void 0
+            ? _f
+            : 60) * 1000,
+        maxRetries:
+          (_g = requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.maxRetries) !== null &&
+          _g !== void 0
+            ? _g
+            : (_h = this._options) === null || _h === void 0
+              ? void 0
+              : _h.maxRetries,
+        abortSignal: requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.abortSignal,
+        fetchFn: (_j = this._options) === null || _j === void 0 ? void 0 : _j.fetch,
+        logging: this._options.logging,
+      });
+      if (_response.ok) {
+        return { data: _response.body, rawResponse: _response.rawResponse };
+      }
+      if (_response.error.reason === 'status-code') {
+        switch (_response.error.statusCode) {
+          case 400:
+            throw new Darwin.BadRequestError(_response.error.body, _response.rawResponse);
+          case 401:
+            throw new Darwin.UnauthorizedError(_response.error.body, _response.rawResponse);
+          case 403:
+            throw new Darwin.ForbiddenError(_response.error.body, _response.rawResponse);
+          case 404:
+            throw new Darwin.NotFoundError(_response.error.body, _response.rawResponse);
+          case 409:
+            throw new Darwin.ConflictError(_response.error.body, _response.rawResponse);
+          case 503:
+            throw new Darwin.ServiceUnavailableError(_response.error.body, _response.rawResponse);
+          default:
+            throw new errors.DarwinError({
+              statusCode: _response.error.statusCode,
+              body: _response.error.body,
+              rawResponse: _response.rawResponse,
+            });
+        }
+      }
+      return (0, handleNonStatusCodeError_js_1.handleNonStatusCodeError)(
+        _response.error,
+        _response.rawResponse,
+        'POST',
+        '/v3/build',
+      );
+    });
+  }
+  /**
+   * Read and update your saved agents, revisions, prepared releases, and tests. Production deployment is not connected.
+   *
+   * @param {Darwin.ManageRequest} request
+   * @param {DarwinClient.RequestOptions} requestOptions - Request-specific configuration.
+   *
+   * @throws {@link Darwin.BadRequestError}
+   * @throws {@link Darwin.UnauthorizedError}
+   * @throws {@link Darwin.ForbiddenError}
+   * @throws {@link Darwin.NotFoundError}
+   * @throws {@link Darwin.ConflictError}
+   * @throws {@link Darwin.ServiceUnavailableError}
+   * @throws {@link errors.DarwinError}
+   * @throws {@link errors.DarwinTimeoutError}
+   *
+   * @example
+   *     await client.manage({
+   *         "Idempotency-Key": "Idempotency-Key",
+   *         body: {
+   *             action: "list_agents"
+   *         }
+   *     })
+   */
+  manage(request, requestOptions) {
+    return core.HttpResponsePromise.fromPromise(this.__manage(request, requestOptions));
+  }
+  __manage(request, requestOptions) {
+    return __awaiter(this, void 0, void 0, function* () {
+      var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+      const { 'Idempotency-Key': idempotencyKey, body: _body } = request;
+      const _authRequest = yield this._options.authProvider.getAuthRequest();
+      const _headers = (0, headers_js_1.mergeHeaders)(
+        _authRequest.headers,
+        (_a = this._options) === null || _a === void 0 ? void 0 : _a.headers,
+        (0, headers_js_1.mergeOnlyDefinedHeaders)({ 'Idempotency-Key': idempotencyKey }),
+        requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.headers,
+      );
+      const _response = yield core.fetcher({
+        url: core.url.join(
+          (_c =
+            (_b = yield core.Supplier.get(this._options.baseUrl)) !== null && _b !== void 0
+              ? _b
+              : yield core.Supplier.get(this._options.environment)) !== null && _c !== void 0
+            ? _c
+            : environments.DarwinEnvironment.Default,
+          'v3/manage',
+        ),
+        method: 'POST',
+        headers: _headers,
+        contentType: 'application/json',
+        queryString: core.url
+          .queryBuilder()
+          .mergeAdditional(requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.queryParams)
+          .build(),
+        requestType: 'json',
+        body: (0, requestBody_js_1.mergeAdditionalBodyParameters)(
+          _body,
+          requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.additionalBodyParameters,
+        ),
+        timeoutMs:
+          ((_f =
+            (_d = requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.timeoutInSeconds) !==
+              null && _d !== void 0
+              ? _d
+              : (_e = this._options) === null || _e === void 0
+                ? void 0
+                : _e.timeoutInSeconds) !== null && _f !== void 0
+            ? _f
+            : 60) * 1000,
+        maxRetries:
+          (_g = requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.maxRetries) !== null &&
+          _g !== void 0
+            ? _g
+            : (_h = this._options) === null || _h === void 0
+              ? void 0
+              : _h.maxRetries,
+        abortSignal: requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.abortSignal,
+        fetchFn: (_j = this._options) === null || _j === void 0 ? void 0 : _j.fetch,
+        logging: this._options.logging,
+      });
+      if (_response.ok) {
+        return { data: _response.body, rawResponse: _response.rawResponse };
+      }
+      if (_response.error.reason === 'status-code') {
+        switch (_response.error.statusCode) {
+          case 400:
+            throw new Darwin.BadRequestError(_response.error.body, _response.rawResponse);
+          case 401:
+            throw new Darwin.UnauthorizedError(_response.error.body, _response.rawResponse);
+          case 403:
+            throw new Darwin.ForbiddenError(_response.error.body, _response.rawResponse);
+          case 404:
+            throw new Darwin.NotFoundError(_response.error.body, _response.rawResponse);
+          case 409:
+            throw new Darwin.ConflictError(_response.error.body, _response.rawResponse);
+          case 503:
+            throw new Darwin.ServiceUnavailableError(_response.error.body, _response.rawResponse);
+          default:
+            throw new errors.DarwinError({
+              statusCode: _response.error.statusCode,
+              body: _response.error.body,
+              rawResponse: _response.rawResponse,
+            });
+        }
+      }
+      return (0, handleNonStatusCodeError_js_1.handleNonStatusCodeError)(
+        _response.error,
+        _response.rawResponse,
+        'POST',
+        '/v3/manage',
+      );
+    });
+  }
+  /**
+   * Run one or multiple agents. Direct handoffs accept one to eight targets, with separate threads and per-target results. Coordinated work uses type: turn, clientMessageId and a message, with an optional sessionId; Darwin plans and coordinates execution through the existing approval-controlled runtime. A handoff receipt is not a completed task outcome.
+   *
+   * @param {Darwin.RunBody} request
+   * @param {DarwinClient.RequestOptions} requestOptions - Request-specific configuration.
+   *
+   * @throws {@link Darwin.BadRequestError}
+   * @throws {@link Darwin.UnauthorizedError}
+   * @throws {@link Darwin.ForbiddenError}
+   * @throws {@link Darwin.act.ConflictError}
+   * @throws {@link Darwin.TooManyRequestsError}
+   * @throws {@link Darwin.ServiceUnavailableError}
+   * @throws {@link errors.DarwinError}
+   * @throws {@link errors.DarwinTimeoutError}
+   *
+   * @example
+   *     await client.run({
+   *         body: {
+   *             searchId: "searchId",
+   *             message: "message"
+   *         }
+   *     })
+   */
+  run(request, requestOptions) {
+    return core.HttpResponsePromise.fromPromise(this.__run(request, requestOptions));
+  }
+  __run(request, requestOptions) {
+    return __awaiter(this, void 0, void 0, function* () {
+      var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+      const {
+        'Idempotency-Key': idempotencyKey,
+        'X-Search-Token': searchToken,
+        'X-Act-Token': actToken,
+        'X-Assist-Token': assistToken,
+        body: _body,
+      } = request;
+      const _authRequest = yield this._options.authProvider.getAuthRequest();
+      const _headers = (0, headers_js_1.mergeHeaders)(
+        _authRequest.headers,
+        (_a = this._options) === null || _a === void 0 ? void 0 : _a.headers,
+        (0, headers_js_1.mergeOnlyDefinedHeaders)({
+          'Idempotency-Key': idempotencyKey,
+          'X-Search-Token': searchToken,
+          'X-Act-Token': actToken,
+          'X-Assist-Token': assistToken,
+        }),
+        requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.headers,
+      );
+      const _response = yield core.fetcher({
+        url: core.url.join(
+          (_c =
+            (_b = yield core.Supplier.get(this._options.baseUrl)) !== null && _b !== void 0
+              ? _b
+              : yield core.Supplier.get(this._options.environment)) !== null && _c !== void 0
+            ? _c
+            : environments.DarwinEnvironment.Default,
+          'v3/run',
+        ),
+        method: 'POST',
+        headers: _headers,
+        contentType: 'application/json',
+        queryString: core.url
+          .queryBuilder()
+          .mergeAdditional(requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.queryParams)
+          .build(),
+        requestType: 'json',
+        body: (0, requestBody_js_1.mergeAdditionalBodyParameters)(
+          _body,
+          requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.additionalBodyParameters,
+        ),
+        timeoutMs:
+          ((_f =
+            (_d = requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.timeoutInSeconds) !==
+              null && _d !== void 0
+              ? _d
+              : (_e = this._options) === null || _e === void 0
+                ? void 0
+                : _e.timeoutInSeconds) !== null && _f !== void 0
+            ? _f
+            : 60) * 1000,
+        maxRetries:
+          (_g = requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.maxRetries) !== null &&
+          _g !== void 0
+            ? _g
+            : (_h = this._options) === null || _h === void 0
+              ? void 0
+              : _h.maxRetries,
+        abortSignal: requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.abortSignal,
+        fetchFn: (_j = this._options) === null || _j === void 0 ? void 0 : _j.fetch,
+        logging: this._options.logging,
+      });
+      if (_response.ok) {
+        return { data: _response.body, rawResponse: _response.rawResponse };
+      }
+      if (_response.error.reason === 'status-code') {
+        switch (_response.error.statusCode) {
+          case 400:
+            throw new Darwin.BadRequestError(_response.error.body, _response.rawResponse);
+          case 401:
+            throw new Darwin.UnauthorizedError(_response.error.body, _response.rawResponse);
+          case 403:
+            throw new Darwin.ForbiddenError(_response.error.body, _response.rawResponse);
+          case 409:
+            throw new Darwin.act.ConflictError(_response.error.body, _response.rawResponse);
+          case 429:
+            throw new Darwin.TooManyRequestsError(_response.error.body, _response.rawResponse);
+          case 503:
+            throw new Darwin.ServiceUnavailableError(_response.error.body, _response.rawResponse);
+          default:
+            throw new errors.DarwinError({
+              statusCode: _response.error.statusCode,
+              body: _response.error.body,
+              rawResponse: _response.rawResponse,
+            });
+        }
+      }
+      return (0, handleNonStatusCodeError_js_1.handleNonStatusCodeError)(
+        _response.error,
+        _response.rawResponse,
+        'POST',
+        '/v3/run',
+      );
+    });
+  }
+  /**
+   * Read an Act request and its authorized session messages, actions and pending requests. Use the actRequestId returned by Act or an Assist child step. Includes current session state by default; continue the selected session through POST /v3/act.
+   *
+   * @param {Darwin.GetRunRequestRequest} request
+   * @param {DarwinClient.RequestOptions} requestOptions - Request-specific configuration.
+   *
+   * @throws {@link Darwin.UnauthorizedError}
+   * @throws {@link Darwin.ForbiddenError}
+   * @throws {@link Darwin.TooManyRequestsError}
+   * @throws {@link errors.DarwinError}
+   * @throws {@link errors.DarwinTimeoutError}
+   *
+   * @example
+   *     await client.getRunRequest({
+   *         actRequestId: "actRequestId"
+   *     })
+   */
+  getRunRequest(request, requestOptions) {
+    return core.HttpResponsePromise.fromPromise(this.__getRunRequest(request, requestOptions));
+  }
+  __getRunRequest(request, requestOptions) {
+    return __awaiter(this, void 0, void 0, function* () {
+      var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+      const { actRequestId, includeThreadState, sessionId, cursor, limit, audience } = request;
+      const _queryParams = {
+        includeThreadState,
+        sessionId,
+        cursor,
+        limit,
+        audience: audience != null ? audience : undefined,
+      };
+      const _authRequest = yield this._options.authProvider.getAuthRequest();
+      const _headers = (0, headers_js_1.mergeHeaders)(
+        _authRequest.headers,
+        (_a = this._options) === null || _a === void 0 ? void 0 : _a.headers,
+        requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.headers,
+      );
+      const _response = yield core.fetcher({
+        url: core.url.join(
+          (_c =
+            (_b = yield core.Supplier.get(this._options.baseUrl)) !== null && _b !== void 0
+              ? _b
+              : yield core.Supplier.get(this._options.environment)) !== null && _c !== void 0
+            ? _c
+            : environments.DarwinEnvironment.Default,
+          `v3/run/requests/${core.url.encodePathParam(actRequestId)}`,
+        ),
+        method: 'GET',
+        headers: _headers,
+        queryString: core.url
+          .queryBuilder()
+          .addMany(_queryParams)
+          .mergeAdditional(requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.queryParams)
+          .build(),
+        timeoutMs:
+          ((_f =
+            (_d = requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.timeoutInSeconds) !==
+              null && _d !== void 0
+              ? _d
+              : (_e = this._options) === null || _e === void 0
+                ? void 0
+                : _e.timeoutInSeconds) !== null && _f !== void 0
+            ? _f
+            : 60) * 1000,
+        maxRetries:
+          (_g = requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.maxRetries) !== null &&
+          _g !== void 0
+            ? _g
+            : (_h = this._options) === null || _h === void 0
+              ? void 0
+              : _h.maxRetries,
+        abortSignal: requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.abortSignal,
+        fetchFn: (_j = this._options) === null || _j === void 0 ? void 0 : _j.fetch,
+        logging: this._options.logging,
+      });
+      if (_response.ok) {
+        return { data: _response.body, rawResponse: _response.rawResponse };
+      }
+      if (_response.error.reason === 'status-code') {
+        switch (_response.error.statusCode) {
+          case 401:
+            throw new Darwin.UnauthorizedError(_response.error.body, _response.rawResponse);
+          case 403:
+            throw new Darwin.ForbiddenError(_response.error.body, _response.rawResponse);
+          case 429:
+            throw new Darwin.TooManyRequestsError(_response.error.body, _response.rawResponse);
+          default:
+            throw new errors.DarwinError({
+              statusCode: _response.error.statusCode,
+              body: _response.error.body,
+              rawResponse: _response.rawResponse,
+            });
+        }
+      }
+      return (0, handleNonStatusCodeError_js_1.handleNonStatusCodeError)(
+        _response.error,
+        _response.rawResponse,
+        'GET',
+        '/v3/run/requests/{actRequestId}',
+      );
+    });
+  }
+  /**
    * The server checks current session access and resource permissions on every request. Acceptance does not prove provider execution.
    *
    * @param {DarwinClient.RequestOptions} requestOptions - Request-specific configuration.
@@ -9746,7 +10198,9 @@ class DarwinClient {
     });
   }
   /**
-   * Omit sessionId to start, or pass it to continue. This endpoint selects the action; answers and clarification can occur without dispatching work. Execution still requires authority and applicable approvals.
+   * @deprecated
+   *
+   * Compatibility alias for the coordinated turn form of POST /v3/run.
    *
    * @param {Darwin.OrchestrateRequest} request
    * @param {DarwinClient.RequestOptions} requestOptions - Request-specific configuration.
@@ -10071,7 +10525,9 @@ class DarwinClient {
     });
   }
   /**
-   * Omit sessionId to start, or pass it to continue. This endpoint selects the action; answers and clarification can occur without dispatching work. Execution still requires authority and applicable approvals.
+   * @deprecated
+   *
+   * Compatibility alias for the coordinated turn form of POST /v3/run.
    *
    * @param {Darwin.RouteRequest} request
    * @param {DarwinClient.RequestOptions} requestOptions - Request-specific configuration.
@@ -10181,7 +10637,9 @@ class DarwinClient {
     });
   }
   /**
-   * Omit sessionId to start, or pass it to continue. This endpoint selects the action; answers and clarification can occur without dispatching work. Execution still requires authority and applicable approvals.
+   * @deprecated
+   *
+   * Compatibility alias for the coordinated turn form of POST /v3/run.
    *
    * @param {Darwin.ExecuteRequest} request
    * @param {DarwinClient.RequestOptions} requestOptions - Request-specific configuration.

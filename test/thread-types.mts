@@ -127,3 +127,19 @@ void client.createOrContinueAct({
   // @ts-expect-error Structured input cannot be a prose confirmation.
   body: { threadId: 'thread', message: { type: 'input_response', requestId: 'pending-input', arguments: 'yes' } },
 });
+
+// Run accepts direct multi-target work and coordinated turns at the same route.
+void client.run({ body: { targets: [{ agentId: 'research' }, { agentId: 'analysis' }], message: 'Review the brief' } });
+void client.run({
+  body: {
+    type: 'turn',
+    clientMessageId: 'task-001',
+    message: 'Coordinate the research',
+    sessionId: 'asst_00000000-0000-4000-8000-000000000001',
+  },
+});
+void client.build({
+  body: { action: 'prepare_release', draftId: 'draft_1', revision: 1 },
+  'Idempotency-Key': 'release-001',
+});
+void client.manage({ body: { action: 'list_agents' }, 'Idempotency-Key': 'list-001' });

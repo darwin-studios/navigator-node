@@ -3,6 +3,7 @@ export type { AcceptThreadInvitationRequest } from "./AcceptThreadInvitationRequ
 export { AdaptiveSearchRequest } from "./AdaptiveSearchRequest.mjs";
 export type { ArchiveThreadBody } from "./ArchiveThreadBody.mjs";
 export type { AuthenticateBody } from "./AuthenticateBody.mjs";
+export type { BuildRequest } from "./BuildRequest.mjs";
 export type { ChallengeMachineKeyRequest } from "./ChallengeMachineKeyRequest.mjs";
 export type { CompleteContextUploadRequest } from "./CompleteContextUploadRequest.mjs";
 export type { ConnectAccountAgentRequest } from "./ConnectAccountAgentRequest.mjs";
@@ -37,6 +38,7 @@ export type { GetOwnerProcessingContextRequest } from "./GetOwnerProcessingConte
 export type { GetPaymentOptionsRequest } from "./GetPaymentOptionsRequest.mjs";
 export type { GetPaymentStatusRequest } from "./GetPaymentStatusRequest.mjs";
 export type { GetResultArtifactDownloadUrlRequest } from "./GetResultArtifactDownloadUrlRequest.mjs";
+export type { GetRunRequestRequest } from "./GetRunRequestRequest.mjs";
 export type { GetSearchRequest } from "./GetSearchRequest.mjs";
 export type { GetSessionEventsRequest } from "./GetSessionEventsRequest.mjs";
 export type { GetSessionOperationRequest } from "./GetSessionOperationRequest.mjs";
@@ -62,6 +64,7 @@ export type { ListThreadMessagesRequest } from "./ListThreadMessagesRequest.mjs"
 export type { ListThreadOperationsRequest } from "./ListThreadOperationsRequest.mjs";
 export type { ListThreadsRequest } from "./ListThreadsRequest.mjs";
 export { LiveSearchRequest } from "./LiveSearchRequest.mjs";
+export type { ManageRequest } from "./ManageRequest.mjs";
 export { NavigateRequest } from "./NavigateRequest.mjs";
 export { OrchestrateRequest } from "./OrchestrateRequest.mjs";
 export type { PayBody } from "./PayBody.mjs";
@@ -80,6 +83,7 @@ export type { RevokeMachineKeyRequest } from "./RevokeMachineKeyRequest.mjs";
 export type { RevokePaymentMethodBody } from "./RevokePaymentMethodBody.mjs";
 export type { RevokeTargetAccountRequest } from "./RevokeTargetAccountRequest.mjs";
 export { RouteRequest } from "./RouteRequest.mjs";
+export type { RunBody } from "./RunBody.mjs";
 export type { SearchRequest } from "./SearchRequest.mjs";
 export { SelectAccountAgentRequest } from "./SelectAccountAgentRequest.mjs";
 export type { SendMessageRequest } from "./SendMessageRequest.mjs";
